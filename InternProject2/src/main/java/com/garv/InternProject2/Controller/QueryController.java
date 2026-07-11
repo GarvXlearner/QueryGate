@@ -34,5 +34,26 @@ public class QueryController {
         return ResponseEntity.ok(queryService.executeQuery(user.getId(), request));
 
     }
+    @PostMapping("/procedure/create")
+    public ResponseEntity<String> createProcedure(@Valid @RequestBody QueryRequest request, HttpServletRequest httprequest){
+        String username =(String)httprequest.getAttribute("username");
+        User user = userRepository.findByUsername(username).orElse(null);
+        if(user==null)
+        {
+            return ResponseEntity.status(401).body("Username not found");
+        }
+        return ResponseEntity.ok(queryService.createProcedure(user.getId(),request));
+    }
+
+    @PostMapping("/procedure/call")
+    public ResponseEntity<String> callProcedure(@Valid @RequestBody QueryRequest request, HttpServletRequest httprequest){
+        String username =(String)httprequest.getAttribute("username");
+        User user = userRepository.findByUsername(username).orElse(null);
+        if(user==null)
+        {
+            return ResponseEntity.status(401).body("Username not found");
+        }
+        return ResponseEntity.ok(queryService.callProcedure(user.getId(),request));
+    }
 
 }
