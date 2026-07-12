@@ -1,9 +1,11 @@
 package com.garv.InternProject2.Service;
 
 import com.garv.InternProject2.Entity.Database;
+import com.garv.InternProject2.Entity.QueryLog;
 import com.garv.InternProject2.Entity.UserDbAccess;
 import com.garv.InternProject2.QueryRequest;
 import com.garv.InternProject2.Repository.DatabaseRepo;
+import com.garv.InternProject2.Repository.QueryLogRepository;
 import com.garv.InternProject2.Repository.UserDbAccessRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,20 @@ public class QueryService {
     @Autowired
     private DatabaseRepo databaseRepository;
 
+    @Autowired
+    private QueryLogRepository queryLogRepository;
+
+    private void saveLog(Long userId, Long dbId, String dbName, String query, QueryLog.Status status) {
+        QueryLog log = new QueryLog();
+        log.setUserid(userId);
+        log.setDbid(dbId);
+        log.setDbname(dbName);
+        log.setQuerytext(query);
+        log.setActiontype(query.trim().split(" ")[0].toUpperCase()); // first word: SELECT/DELETE/etc.
+        log.setStatus(status);
+        queryLogRepository.save(log);
+    }
+
     public String executeQuery(Long userId, QueryRequest request) {
 
         List<UserDbAccess> accessList = userDbAccessRepository.findByUserId(userId);
@@ -30,26 +46,31 @@ public class QueryService {
                 .orElse(null);
 
         if (access == null) {
+            saveLog(userId, request.getDbId(), null, request.getQuery(), QueryLog.Status.FAILED);
             return "Access denied. You do not have access to this database.";
         }
 
         String query = request.getQuery().trim();
         String queryUpper = query.toUpperCase();
         UserDbAccess.Permission permission = access.getRight();
+        String dbName = access.getDb().getDbName();
 
         if (permission == UserDbAccess.Permission.READ) {
             if (!queryUpper.startsWith("SELECT") && !queryUpper.startsWith("SHOW")) {
+                saveLog(userId, request.getDbId(), dbName, query, QueryLog.Status.FAILED);
                 return "Access denied. You only have READ access — only SELECT and SHOW queries allowed.";
             }
         }
 
         if (permission == UserDbAccess.Permission.WRITE) {
             if (queryUpper.startsWith("DROP") || queryUpper.startsWith("CREATE") || queryUpper.startsWith("ALTER")) {
+                saveLog(userId, request.getDbId(), dbName, query, QueryLog.Status.FAILED);
                 return "Access denied. WRITE access does not allow DDL queries.";
             }
             if (queryUpper.startsWith("DELETE") || queryUpper.startsWith("TRUNCATE") ||
                     queryUpper.startsWith("UPDATE")) {
                 if (!queryUpper.contains("WHERE")) {
+                    saveLog(userId, request.getDbId(), dbName, query, QueryLog.Status.FAILED);
                     return "Access denied. DELETE, UPDATE, TRUNCATE require a WHERE clause for WRITE access.";
                 }
             }
@@ -57,10 +78,11 @@ public class QueryService {
 
         Database db = databaseRepository.findById(request.getDbId()).orElse(null);
         if (db == null) {
+            saveLog(userId, request.getDbId(), dbName, query, QueryLog.Status.FAILED);
             return "Database not found.";
         }
 
-        String url = "jdbc:mysql://" + db.getDbHost() + ":3307/" + db.getDbName();
+        String url = "jdbc:mysql://" + db.getDbHost() + ":3306/" + db.getDbName();
         String username = "root";
         String password = db.getPassword();
 
@@ -86,13 +108,17 @@ public class QueryService {
                     }
                     rows.add(row.toString());
                 }
+
+                saveLog(userId, request.getDbId(), dbName, query, QueryLog.Status.SUCCESS);
                 return String.join("\n", rows);
             } else {
                 int affected = stmt.executeUpdate(query);
+                saveLog(userId, request.getDbId(), dbName, query, QueryLog.Status.SUCCESS);
                 return "Query executed successfully. Rows affected: " + affected;
             }
 
         } catch (SQLException e) {
+            saveLog(userId, request.getDbId(), dbName, query, QueryLog.Status.FAILED);
             return "Query execution failed: " + e.getMessage();
         }
     }
@@ -114,7 +140,7 @@ public class QueryService {
         Database db = databaseRepository.findById(request.getDbId()).orElse(null);
         if (db == null) return "Database not found.";
 
-        String url = "jdbc:mysql://" + db.getDbHost() + ":3307/" + db.getDbName();
+        String url = "jdbc:mysql://" + db.getDbHost() + ":3306/" + db.getDbName();
 
         try (Connection conn = DriverManager.getConnection(url, "root", db.getPassword())) {
             Statement stmt = conn.createStatement();
@@ -138,7 +164,7 @@ public class QueryService {
         Database db = databaseRepository.findById(request.getDbId()).orElse(null);
         if (db == null) return "Database not found.";
 
-        String url = "jdbc:mysql://" + db.getDbHost() + ":3307/" + db.getDbName();
+        String url = "jdbc:mysql://" + db.getDbHost() + ":3306/" + db.getDbName();
 
         try (Connection conn = DriverManager.getConnection(url, "root", db.getPassword())) {
             Statement stmt = conn.createStatement();
