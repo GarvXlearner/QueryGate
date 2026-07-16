@@ -37,7 +37,7 @@ public class DataController {
     @Autowired
     private QueryLogRepository queryLogRepository;
 
-    @GetMapping("/log")
+    @GetMapping("/logs")
     public ResponseEntity<List<QueryLog>> getAllLogs() {
         return ResponseEntity.ok(queryLogRepository.findAll());
     }
