@@ -33,8 +33,7 @@ public class SchemaController {
     }
 
     @GetMapping("/{dbId}/tables/{tableName}/columns")
-    public ResponseEntity<List<String>> getColumns(@PathVariable Long dbId,
-                                                   @PathVariable String tableName,
+    public ResponseEntity<List<String>> getColumns(@PathVariable Long dbId, @PathVariable String tableName,
                                                    HttpServletRequest httpRequest) {
         String username = (String) httpRequest.getAttribute("username");
         User user = userRepository.findByUsername(username).orElse(null);
@@ -44,5 +43,28 @@ public class SchemaController {
         }
 
         return ResponseEntity.ok(schemaService.getColumns(user.getId(), dbId, tableName));
+    }
+    @GetMapping("/{dbId}/views")
+    public ResponseEntity<List<String>> getViews(@PathVariable Long dbId, HttpServletRequest httpRequest) {
+        String username = (String) httpRequest.getAttribute("username");
+        User user = userRepository.findByUsername(username).orElse(null);
+
+        if (user == null) {
+            return ResponseEntity.status(401).body(List.of("User not found from token."));
+        }
+
+        return ResponseEntity.ok(schemaService.getViews(user.getId(), dbId));
+    }
+
+    @GetMapping("/{dbId}/procedures")
+    public ResponseEntity<List<String>> getProcedures(@PathVariable Long dbId, HttpServletRequest httpRequest) {
+        String username = (String) httpRequest.getAttribute("username");
+        User user = userRepository.findByUsername(username).orElse(null);
+
+        if (user == null) {
+            return ResponseEntity.status(401).body(List.of("User not found from token."));
+        }
+
+        return ResponseEntity.ok(schemaService.getProcedures(user.getId(), dbId));
     }
 }

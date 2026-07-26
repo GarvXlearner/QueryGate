@@ -36,7 +36,7 @@ public class SchemaService {
             return error;
         }
         List<String> tables = new ArrayList<>();
-        String url = "jdbc:mysql://" + db.getDbHost() + ":3306/INFORMATION_SCHEMA";
+        String url = "jdbc:mysql://" + db.getDbHost() + ":3307/INFORMATION_SCHEMA";
 
         String query = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = ?";
 
@@ -72,7 +72,7 @@ public class SchemaService {
         }
 
         List<String> columns = new ArrayList<>();
-        String url = "jdbc:mysql://" + db.getDbHost() + ":3306/INFORMATION_SCHEMA";
+        String url = "jdbc:mysql://" + db.getDbHost() + ":3307/INFORMATION_SCHEMA";
 
         String query = "SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?";
 
@@ -92,6 +92,79 @@ public class SchemaService {
         }
 
         return columns;
+
+
+    }
+    public List<String> getViews(Long userId, Long dbId) {
+        if (!hasAccess(userId, dbId)) {
+            List<String> error = new ArrayList<>();
+            error.add("Access denied. You do not have access to this database.");
+            return error;
+        }
+
+        Database db = databaseRepo.findById(dbId).orElse(null);
+        if (db == null) {
+            List<String> error = new ArrayList<>();
+            error.add("Database not found.");
+            return error;
+        }
+
+        List<String> views = new ArrayList<>();
+        String url = "jdbc:mysql://" + db.getDbHost() + ":3307/INFORMATION_SCHEMA";
+
+        String query = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = ?";
+
+        try (Connection conn = DriverManager.getConnection(url, "root", db.getPassword());
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, db.getDbName());
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                views.add(rs.getString("TABLE_NAME"));
+            }
+
+        } catch (SQLException e) {
+            views.add("Error fetching views: " + e.getMessage());
+        }
+
+        return views;
+    }
+
+    public List<String> getProcedures(Long userId, Long dbId) {
+        if (!hasAccess(userId, dbId)) {
+            List<String> error = new ArrayList<>();
+            error.add("Access denied. You do not have access to this database.");
+            return error;
+        }
+
+        Database db = databaseRepo.findById(dbId).orElse(null);
+        if (db == null) {
+            List<String> error = new ArrayList<>();
+            error.add("Database not found.");
+            return error;
+        }
+
+        List<String> procedures = new ArrayList<>();
+        String url = "jdbc:mysql://" + db.getDbHost() + ":3307/INFORMATION_SCHEMA";
+
+        String query = "SELECT ROUTINE_NAME FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_SCHEMA = ? AND ROUTINE_TYPE = 'PROCEDURE'";
+
+        try (Connection conn = DriverManager.getConnection(url, "root", db.getPassword());
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, db.getDbName());
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                procedures.add(rs.getString("ROUTINE_NAME"));
+            }
+
+        } catch (SQLException e) {
+            procedures.add("Error fetching procedures: " + e.getMessage());
+        }
+
+        return procedures;
     }
 }
 

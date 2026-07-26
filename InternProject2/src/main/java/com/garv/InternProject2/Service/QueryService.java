@@ -82,7 +82,7 @@ public class QueryService {
             return "Database not found.";
         }
 
-        String url = "jdbc:mysql://" + db.getDbHost() + ":3306/" + db.getDbName();
+        String url = "jdbc:mysql://" + db.getDbHost() + ":3307/" + db.getDbName();
         String username = "root";
         String password = db.getPassword();
 
@@ -140,7 +140,7 @@ public class QueryService {
         Database db = databaseRepository.findById(request.getDbId()).orElse(null);
         if (db == null) return "Database not found.";
 
-        String url = "jdbc:mysql://" + db.getDbHost() + ":3306/" + db.getDbName();
+        String url = "jdbc:mysql://" + db.getDbHost() + ":3307/" + db.getDbName();
 
         try (Connection conn = DriverManager.getConnection(url, "root", db.getPassword())) {
             Statement stmt = conn.createStatement();
@@ -164,7 +164,7 @@ public class QueryService {
         Database db = databaseRepository.findById(request.getDbId()).orElse(null);
         if (db == null) return "Database not found.";
 
-        String url = "jdbc:mysql://" + db.getDbHost() + ":3306/" + db.getDbName();
+        String url = "jdbc:mysql://" + db.getDbHost() + ":3307/" + db.getDbName();
 
         try (Connection conn = DriverManager.getConnection(url, "root", db.getPassword())) {
             Statement stmt = conn.createStatement();
