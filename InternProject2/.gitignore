@@ -1,4 +1,8 @@
 HELP.md
+
+### Environment / Secrets ###
+src/main/resources/application.properties
+
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
