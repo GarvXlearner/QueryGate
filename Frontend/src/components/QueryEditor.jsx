@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Play, Sparkles, X } from 'lucide-react';
 import Editor from '@monaco-editor/react';
@@ -8,9 +8,23 @@ export default function QueryEditor({ activeDb, onResult, theme }) {
   const { token } = useAuth();
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const editorRef = useRef(null);
+
+  const handleEditorDidMount = (editor, monaco) => {
+    editorRef.current = editor;
+  };
 
   const handleExecute = async () => {
-    if (!query.trim()) return;
+    let textToExecute = query;
+    if (editorRef.current) {
+      const selection = editorRef.current.getSelection();
+      const model = editorRef.current.getModel();
+      if (selection && !selection.isEmpty()) {
+        textToExecute = model.getValueInRange(selection);
+      }
+    }
+
+    if (!textToExecute.trim()) return;
     setIsLoading(true);
     try {
       const res = await fetch('/api/query/execute', {
@@ -19,7 +33,7 @@ export default function QueryEditor({ activeDb, onResult, theme }) {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ dbId: activeDb.id || activeDb.Id, query })
+        body: JSON.stringify({ dbId: activeDb.id || activeDb.Id, query: textToExecute })
       });
       const data = await res.text();
       onResult({ type: res.ok ? 'success' : 'error', data });
@@ -31,7 +45,16 @@ export default function QueryEditor({ activeDb, onResult, theme }) {
   };
 
   const handleAiExecute = async () => {
-    if (!query.trim()) return;
+    let textToExecute = query;
+    if (editorRef.current) {
+      const selection = editorRef.current.getSelection();
+      const model = editorRef.current.getModel();
+      if (selection && !selection.isEmpty()) {
+        textToExecute = model.getValueInRange(selection);
+      }
+    }
+
+    if (!textToExecute.trim()) return;
     setIsLoading(true);
     try {
       const res = await fetch('/api/query/ai-execute', {
@@ -40,7 +63,7 @@ export default function QueryEditor({ activeDb, onResult, theme }) {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ dbId: activeDb.id || activeDb.Id, question: query })
+        body: JSON.stringify({ dbId: activeDb.id || activeDb.Id, question: textToExecute })
       });
       const data = await res.text();
       onResult({ type: res.ok ? 'success' : 'error', data });
@@ -85,10 +108,11 @@ export default function QueryEditor({ activeDb, onResult, theme }) {
         <div className="editor-area" style={{ flex: 1, padding: '10px 0', border: '1px solid var(--border-color)' }}>
           <Editor
             height="100%"
-            defaultLanguage="sql"
+            defaultLanguage="mysql"
             theme={theme === 'dark' ? 'vs-dark' : 'vs-light'}
             value={query}
             onChange={(val) => setQuery(val || '')}
+            onMount={handleEditorDidMount}
             options={{
               minimap: { enabled: false },
               fontSize: 14,
