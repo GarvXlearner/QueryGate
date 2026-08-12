@@ -1,8 +1,10 @@
-import { useMemo } from 'react';
-import { AlertCircle, CheckCircle } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { AlertCircle, CheckCircle, Grid, MessageSquare } from 'lucide-react';
 import './ResultsPanel.css';
 
 export default function ResultsPanel({ result }) {
+  const [activeTab, setActiveTab] = useState('results'); // 'results' or 'messages'
+
   const parsedData = useMemo(() => {
     if (!result) return null;
     
@@ -40,19 +42,45 @@ export default function ResultsPanel({ result }) {
 
   }, [result]);
 
+  // Auto-switch to messages if it's an error or just a message
+  useEffect(() => {
+    if (parsedData) {
+      if (parsedData.type === 'message') {
+        setActiveTab('messages');
+      } else if (parsedData.type === 'table') {
+        setActiveTab('results');
+      }
+    }
+  }, [parsedData]);
+
   if (!result) {
     return (
       <div className="results-panel empty">
-        <div className="results-placeholder">Results will appear here</div>
+        <div className="results-placeholder">Results and Messages will appear here</div>
       </div>
     );
   }
 
   return (
     <div className="results-panel">
-      <div className="results-header">
-        Results
+      <div className="results-tabs">
+        <button 
+          className={`results-tab ${activeTab === 'results' ? 'active' : ''}`}
+          onClick={() => setActiveTab('results')}
+          disabled={parsedData.type === 'message' && parsedData.isError}
+        >
+          <Grid size={14} />
+          Results
+        </button>
+        <button 
+          className={`results-tab ${activeTab === 'messages' ? 'active' : ''}`}
+          onClick={() => setActiveTab('messages')}
+        >
+          <MessageSquare size={14} />
+          Messages
+        </button>
       </div>
+
       <div className="results-content">
         {parsedData.aiHeader && (
           <div className="ai-context-panel">
@@ -61,18 +89,21 @@ export default function ResultsPanel({ result }) {
           </div>
         )}
 
-        {parsedData.type === 'message' && (
-          <div className={`message-box ${parsedData.isError ? 'error' : 'success'}`}>
-            {parsedData.isError ? <AlertCircle size={20} /> : <CheckCircle size={20} />}
-            <span>{parsedData.content}</span>
+        {activeTab === 'messages' && (
+          <div className="messages-container">
+            <div className={`message-text ${parsedData.isError ? 'error' : 'success'}`}>
+              {parsedData.isError ? <AlertCircle size={14} className="msg-icon"/> : <CheckCircle size={14} className="msg-icon" />}
+              {parsedData.type === 'table' ? `Query executed successfully. (${parsedData.rows.length} rows affected)` : parsedData.content}
+            </div>
           </div>
         )}
 
-        {parsedData.type === 'table' && (
+        {activeTab === 'results' && parsedData.type === 'table' && (
           <div className="table-container">
-            <table className="results-table">
+            <table className="ssms-grid">
               <thead>
                 <tr>
+                  <th className="row-number-header"></th>
                   {parsedData.headers.map((h, i) => (
                     <th key={i}>{h}</th>
                   ))}
@@ -81,6 +112,7 @@ export default function ResultsPanel({ result }) {
               <tbody>
                 {parsedData.rows.map((row, i) => (
                   <tr key={i}>
+                    <td className="row-number">{i + 1}</td>
                     {row.map((cell, j) => (
                       <td key={j}>{cell}</td>
                     ))}
@@ -88,8 +120,8 @@ export default function ResultsPanel({ result }) {
                 ))}
                 {parsedData.rows.length === 0 && (
                   <tr>
-                    <td colSpan={parsedData.headers.length} className="no-data">
-                      0 rows returned.
+                    <td colSpan={parsedData.headers.length + 1} className="no-data">
+                      No rows returned.
                     </td>
                   </tr>
                 )}

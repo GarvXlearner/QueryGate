@@ -30,11 +30,8 @@ public class GeminiService {
                 "Question: " + question;
 
         Map<String, Object> requestBody = Map.of(
-                "contents", List.of(
-                        Map.of("parts", List.of(
-                                Map.of("text", prompt)
-                        ))
-                )
+                "model", "gemini-3.6-flash",
+                "input", prompt
         );
 
         HttpHeaders headers = new HttpHeaders();
@@ -46,10 +43,10 @@ public class GeminiService {
         Map response = restTemplate.postForObject(apiUrl, entity, Map.class);
 
         try {
-            List<Map> candidates = (List<Map>) response.get("candidates");
-            Map content = (Map) candidates.get(0).get("content");
-            List<Map> parts = (List<Map>) content.get("parts");
-            String sql = (String) parts.get(0).get("text");
+            List<Map> steps = (List<Map>) response.get("steps");
+            Map lastStep = steps.get(steps.size() - 1);
+            List<Map> contentList = (List<Map>) lastStep.get("content");
+            String sql = (String) contentList.get(0).get("text");
             return sql.trim();
         } catch (Exception e) {
             return "ERROR: Could not parse Gemini response - " + e.getMessage();

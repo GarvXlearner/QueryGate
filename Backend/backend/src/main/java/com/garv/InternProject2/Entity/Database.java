@@ -18,6 +18,11 @@ public class Database {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+    
+    @ManyToOne
+    @JoinColumn(name = "server_workspace_id")
+    private Server serverWorkspace;
+
     @PrePersist
     public void PrePersist()
     {
@@ -54,5 +59,6 @@ public class Database {
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
 
-
+    public Server getServerWorkspace() { return serverWorkspace; }
+    public void setServerWorkspace(Server serverWorkspace) { this.serverWorkspace = serverWorkspace; }
 }

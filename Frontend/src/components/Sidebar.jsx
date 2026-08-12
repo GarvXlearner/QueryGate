@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Database, Table, Columns, ChevronRight, ChevronDown, Folder, Code } from 'lucide-react';
+import { Database, Table, Columns, ChevronRight, ChevronDown, Folder, Code, Server, Plug } from 'lucide-react';
 import './Sidebar.css';
 
 const TreeNode = ({ label, icon: Icon, children, onClick, defaultExpanded = false }) => {
@@ -31,6 +31,8 @@ export default function Sidebar({ onSelectDb, activeDb }) {
   const [databases, setDatabases] = useState([]);
   const [tablesByDb, setTablesByDb] = useState({});
   const [columnsByTable, setColumnsByTable] = useState({});
+  const [viewsByDb, setViewsByDb] = useState({});
+  const [proceduresByDb, setProceduresByDb] = useState({});
 
   useEffect(() => {
     fetchDatabases();
@@ -81,46 +83,102 @@ export default function Sidebar({ onSelectDb, activeDb }) {
     }
   };
 
+  const fetchViews = async (dbId) => {
+    if (viewsByDb[dbId]) return;
+    try {
+      const res = await fetch(`/api/schema/${dbId}/views`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setViewsByDb(prev => ({ ...prev, [dbId]: data }));
+      }
+    } catch (err) {
+      console.error('Error fetching views:', err);
+    }
+  };
+
+  const fetchProcedures = async (dbId) => {
+    if (proceduresByDb[dbId]) return;
+    try {
+      const res = await fetch(`/api/schema/${dbId}/procedures`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setProceduresByDb(prev => ({ ...prev, [dbId]: data }));
+      }
+    } catch (err) {
+      console.error('Error fetching procedures:', err);
+    }
+  };
+
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
         Object Explorer
       </div>
+      <div className="sidebar-toolbar">
+        <button className="sidebar-btn" title="Connect">
+          <Plug size={14} className="icon-green" /> Connect <ChevronDown size={12} />
+        </button>
+      </div>
       <div className="tree-container">
-        {databases.map(access => {
-          const db = access.db;
-          const isActive = activeDb?.id === db.id;
-          
-          return (
-            <div key={db.id} className={`db-wrapper ${isActive ? 'active' : ''}`}>
-              <TreeNode 
-                label={db.dbName} 
-                icon={Database} 
-                onClick={() => {
-                  onSelectDb(db);
-                  fetchTables(db.id);
-                }}
-              >
-                <TreeNode label="Tables" icon={Folder}>
-                  {tablesByDb[db.id]?.map(table => (
-                    <TreeNode 
-                      key={table} 
-                      label={table} 
-                      icon={Table}
-                      onClick={() => fetchColumns(db.id, table)}
-                    >
-                      {columnsByTable[`${db.id}-${table}`]?.map(col => (
-                        <TreeNode key={col} label={col} icon={Columns} />
+        <TreeNode label="localhost (SQL Server - admin)" icon={Server} defaultExpanded={true}>
+          <TreeNode label="Databases" icon={Folder} defaultExpanded={true}>
+            {databases.map(access => {
+              const db = access.db;
+              const isActive = (activeDb?.id || activeDb?.Id) === (db.id || db.Id);
+              
+              return (
+                <div key={db.id || db.Id} className={`db-wrapper ${isActive ? 'active' : ''}`}>
+                  <TreeNode 
+                    label={db.dbName} 
+                    icon={Database} 
+                    onClick={() => {
+                      onSelectDb(db);
+                      const dbId = db.id || db.Id;
+                      fetchTables(dbId);
+                      fetchViews(dbId);
+                      fetchProcedures(dbId);
+                    }}
+                  >
+                    <TreeNode label="Tables" icon={Folder}>
+                      {tablesByDb[db.id || db.Id]?.map(table => (
+                        <TreeNode 
+                          key={table} 
+                          label={table} 
+                          icon={Table}
+                          onClick={() => fetchColumns(db.id || db.Id, table)}
+                        >
+                          <TreeNode label="Columns" icon={Folder}>
+                            {columnsByTable[`${db.id || db.Id}-${table}`]?.map(col => (
+                              <TreeNode key={col} label={col} icon={Columns} />
+                            ))}
+                          </TreeNode>
+                        </TreeNode>
                       ))}
                     </TreeNode>
-                  ))}
-                </TreeNode>
-                <TreeNode label="Views" icon={Folder} />
-                <TreeNode label="Stored Procedures" icon={Code} />
-              </TreeNode>
-            </div>
-          );
-        })}
+                    <TreeNode label="Views" icon={Folder}>
+                      {viewsByDb[db.id]?.map(view => (
+                        <TreeNode key={view} label={view} icon={Table} />
+                      ))}
+                    </TreeNode>
+                    <TreeNode label="Programmability" icon={Folder}>
+                      <TreeNode label="Stored Procedures" icon={Folder}>
+                        {proceduresByDb[db.id]?.map(proc => (
+                          <TreeNode key={proc} label={proc} icon={Code} />
+                        ))}
+                      </TreeNode>
+                    </TreeNode>
+                  </TreeNode>
+                </div>
+              );
+            })}
+          </TreeNode>
+          <TreeNode label="Security" icon={Folder} />
+          <TreeNode label="Server Objects" icon={Folder} />
+        </TreeNode>
       </div>
     </aside>
   );

@@ -24,4 +24,13 @@ public class userController {
     public ResponseEntity<String> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(userService.login(request));
     }
+
+    @PostMapping("/google-login")
+    public ResponseEntity<String> googleLogin(@Valid @RequestBody com.garv.InternProject2.GoogleLoginRequest request) {
+        String result = userService.googleLogin(request);
+        if (result.equals("Invalid ID token.") || result.equals("Server error during Google login.")) {
+            return ResponseEntity.status(401).body(result);
+        }
+        return ResponseEntity.ok(result);
+    }
 }

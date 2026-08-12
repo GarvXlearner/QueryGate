@@ -1,24 +1,44 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
-  --bg-dark: #0f111a;
-  --bg-panel: #1a1d27;
-  --bg-elevated: #252936;
-  --bg-hover: #2d3142;
+  /* Light Theme (Default) */
+  --bg-dark: #f0f0f0;          /* Main workspace background */
+  --bg-panel: #ffffff;         /* Panels like sidebar, toolbar */
+  --bg-elevated: #e2e8f0;      /* Elevated elements */
+  --bg-hover: #e5e7eb;         /* Hover states */
   
-  --text-primary: #f8f9fa;
-  --text-secondary: #a0a5b5;
-  --text-muted: #6b7280;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #9ca3af;
   
-  --accent-primary: #3b82f6;
-  --accent-hover: #2563eb;
+  --accent-primary: #005a9e;   /* SSMS blue */
+  --accent-hover: #0078d4;
   --accent-success: #10b981;
   --accent-error: #ef4444;
   
-  --border-color: #2e3342;
+  --border-color: #d1d5db;
   
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+}
+
+[data-theme="dark"] {
+  /* Dark Theme (SSMS/VS Code Dark) */
+  --bg-dark: #1e1e1e;
+  --bg-panel: #252526;
+  --bg-elevated: #333333;
+  --bg-hover: #2a2d2e;
+  
+  --text-primary: #cccccc;
+  --text-secondary: #969696;
+  --text-muted: #6b7280;
+  
+  --accent-primary: #007acc;
+  --accent-hover: #005a9e;
+  --accent-success: #10b981;
+  --accent-error: #f48771;
+  
+  --border-color: #454545;
 }
 
 * {
