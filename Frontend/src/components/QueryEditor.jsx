@@ -87,6 +87,7 @@ export default function QueryEditor({ activeDb, onResult, theme, insertTextTrigg
     }
     
     setIsLoading(true);
+    const startTime = performance.now();
     try {
       const res = await fetch(endpoint, {
         method: 'POST',
@@ -100,9 +101,11 @@ export default function QueryEditor({ activeDb, onResult, theme, insertTextTrigg
         })
       });
       const data = await res.text();
-      props.onResult({ type: res.ok ? 'success' : 'error', data });
+      const endTime = performance.now();
+      props.onResult({ type: res.ok ? 'success' : 'error', data, timeMs: Math.round(endTime - startTime) });
     } catch (err) {
-      props.onResult({ type: 'error', data: 'Failed to execute action.' });
+      const endTime = performance.now();
+      props.onResult({ type: 'error', data: 'Failed to execute action.', timeMs: Math.round(endTime - startTime) });
     } finally {
       setIsLoading(false);
     }

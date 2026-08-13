@@ -19,6 +19,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import com.garv.InternProject2.Entity.QueryLog;
+import com.garv.InternProject2.Repository.QueryLogRepository;
+import org.springframework.web.bind.annotation.GetMapping;
+
 @RestController
 @RequestMapping("api/query")
 public class QueryController {
@@ -27,6 +31,19 @@ public class QueryController {
 
     @Autowired
     private userRepo userRepository;
+
+    @Autowired
+    private QueryLogRepository queryLogRepository;
+
+    @GetMapping("/history")
+    public ResponseEntity<List<QueryLog>> getHistory(HttpServletRequest httprequest) {
+        String username = (String)httprequest.getAttribute("username");
+        User user = userRepository.findByUsername(username).orElse(null);
+        if(user == null) {
+            return ResponseEntity.status(401).build();
+        }
+        return ResponseEntity.ok(queryLogRepository.findByUseridOrderByCreatedAtDesc(user.getId()));
+    }
 
     @PostMapping("/execute")
     public ResponseEntity<String> executeQuery(@Valid @RequestBody QueryRequest request, HttpServletRequest httprequest) {
