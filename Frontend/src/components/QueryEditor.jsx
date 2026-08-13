@@ -13,7 +13,12 @@ export default function QueryEditor({ activeDb, onResult, theme, insertTextTrigg
   const editorRef = useRef(null);
   const monacoRef = useRef(null);
   
-  // Use a ref for parser to persist between renders
+  // Persist latest props for Monaco command closures
+  const latestProps = useRef({ activeDb, token, onResult, query });
+  useEffect(() => {
+    latestProps.current = { activeDb, token, onResult, query };
+  });
+  
   const parserRef = useRef(null);
   if (!parserRef.current) {
     parserRef.current = new MySQL();
@@ -52,12 +57,6 @@ export default function QueryEditor({ activeDb, onResult, theme, insertTextTrigg
     }
   }, [insertTextTrigger]);
 
-  const handleEditorDidMount = (editor, monaco) => {
-    editorRef.current = editor;
-    monacoRef.current = monaco;
-    validateSql(query, editor, monaco, parserRef.current);
-  };
-
   const handleQueryChange = (val) => {
     const newText = val || '';
     setQuery(newText);
@@ -66,8 +65,10 @@ export default function QueryEditor({ activeDb, onResult, theme, insertTextTrigg
     }
   };
 
-  const handleExecute = async () => {
-    let textToExecute = query;
+  const executeCore = async (mode) => {
+    const props = latestProps.current;
+    let textToExecute = editorRef.current ? editorRef.current.getValue() : props.query;
+    
     if (editorRef.current) {
       const selection = editorRef.current.getSelection();
       const model = editorRef.current.getModel();
@@ -77,71 +78,72 @@ export default function QueryEditor({ activeDb, onResult, theme, insertTextTrigg
     }
 
     if (!textToExecute.trim()) return;
+    
+    let endpoint = '/api/query/execute';
+    if (mode === 'explain') {
+      textToExecute = "EXPLAIN FORMAT=JSON " + textToExecute;
+    } else if (mode === 'ai') {
+      endpoint = '/api/query/ai-execute';
+    }
+    
     setIsLoading(true);
     try {
-      const res = await fetch('/api/query/execute', {
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${props.token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ dbId: activeDb.id || activeDb.Id, query: textToExecute })
+        body: JSON.stringify({ 
+          dbId: props.activeDb.id || props.activeDb.Id, 
+          [mode === 'ai' ? 'question' : 'query']: textToExecute 
+        })
       });
       const data = await res.text();
-      onResult({ type: res.ok ? 'success' : 'error', data });
+      props.onResult({ type: res.ok ? 'success' : 'error', data });
     } catch (err) {
-      onResult({ type: 'error', data: 'Failed to execute query.' });
+      props.onResult({ type: 'error', data: 'Failed to execute action.' });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleAiExecute = async () => {
-    let textToExecute = query;
-    if (editorRef.current) {
-      const selection = editorRef.current.getSelection();
-      const model = editorRef.current.getModel();
-      if (selection && !selection.isEmpty()) {
-        textToExecute = model.getValueInRange(selection);
-      }
-    }
+  const handleExecute = () => executeCore('execute');
+  const handleAiExecute = () => executeCore('ai');
+  const handleExplain = () => executeCore('explain');
 
-    if (!textToExecute.trim()) return;
-    setIsLoading(true);
-    try {
-      const res = await fetch('/api/query/ai-execute', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ dbId: activeDb.id || activeDb.Id, question: textToExecute })
-      });
-      const data = await res.text();
-      onResult({ type: res.ok ? 'success' : 'error', data });
-    } catch (err) {
-      onResult({ type: 'error', data: 'Failed to execute AI query.' });
-    } finally {
-      setIsLoading(false);
-    }
+  const handleEditorDidMount = (editor, monaco) => {
+    editorRef.current = editor;
+    monacoRef.current = monaco;
+    validateSql(query, editor, monaco, parserRef.current);
+
+    // Bind SSMS Shortcuts
+    // F5 -> Execute
+    editor.addCommand(monaco.KeyCode.F5, () => {
+      handleExecute();
+    });
+
+    // Ctrl + L -> Execution Plan
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyL, () => {
+      handleExplain();
+    });
+
+    // F6 -> AI Execute (Custom)
+    editor.addCommand(monaco.KeyCode.F6, () => {
+      handleAiExecute();
+    });
   };
 
   return (
-    <div className="query-editor-container">
-      <div className="editor-tabs">
-        <div className="editor-tab active">
-          SQLQuery1.sql - localhost ({activeDb?.dbName})
-          <button className="tab-close"><X size={12} /></button>
-        </div>
-      </div>
-      
-      <div className="query-editor">
+    <div className="query-editor-container" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <div className="query-editor" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <div className="editor-toolbar">
           <div className="editor-actions">
             <button 
               className="action-btn primary" 
               onClick={handleExecute}
               disabled={isLoading}
+              title="Execute Query (F5)"
             >
               <Play size={14} className="icon-green" />
               <span>Execute</span>
@@ -150,9 +152,19 @@ export default function QueryEditor({ activeDb, onResult, theme, insertTextTrigg
               className="action-btn ai-btn" 
               onClick={handleAiExecute}
               disabled={isLoading}
+              title="AI Execute (F6)"
             >
               <Sparkles size={14} className="icon-purple" />
               <span>AI Execute</span>
+            </button>
+            <button 
+              className="action-btn" 
+              onClick={handleExplain}
+              disabled={isLoading}
+              title="Display Estimated Execution Plan (Ctrl+L)"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon-orange" style={{marginRight: '6px', color: '#f39c12'}}><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/><path d="M3 9h18"/><path d="M3 15h18"/></svg>
+              <span>Execution Plan</span>
             </button>
           </div>
         </div>

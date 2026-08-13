@@ -56,9 +56,9 @@ public class QueryService {
         String dbName = access.getDb().getDbName();
 
         if (permission == UserDbAccess.Permission.READ) {
-            if (!queryUpper.startsWith("SELECT") && !queryUpper.startsWith("SHOW")) {
+            if (!queryUpper.startsWith("SELECT") && !queryUpper.startsWith("SHOW") && !queryUpper.startsWith("EXPLAIN")) {
                 saveLog(userId, request.getDbId(), dbName, query, QueryLog.Status.FAILED);
-                return "Access denied. You only have READ access — only SELECT and SHOW queries allowed.";
+                return "Access denied. You only have READ access — only SELECT, SHOW, and EXPLAIN queries allowed.";
             }
         }
 
@@ -89,7 +89,7 @@ public class QueryService {
         try (Connection conn = DriverManager.getConnection(url, username, password)) {
             Statement stmt = conn.createStatement();
 
-            if (queryUpper.startsWith("SELECT") || queryUpper.startsWith("SHOW")) {
+            if (queryUpper.startsWith("SELECT") || queryUpper.startsWith("SHOW") || queryUpper.startsWith("EXPLAIN")) {
                 ResultSet rs = stmt.executeQuery(query);
                 ResultSetMetaData meta = rs.getMetaData();
                 int colCount = meta.getColumnCount();
