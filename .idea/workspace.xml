@@ -4,50 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="866c530c-bfa3-4858-b499-fd3d8e2b6a51" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Backend/backend/src/main/java/com/garv/InternProject2/Util/SecurityConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/Login.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Frontend/src/components/Sidebar.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/InternProject2.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/jarRepositories.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/.gitattributes" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/mvnw" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/mvnw.cmd" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/pom.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/src/main/java/com/garv/InternProject2/Controller/DataController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/src/main/java/com/garv/InternProject2/Controller/QueryController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/src/main/java/com/garv/InternProject2/Controller/SchemaController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/src/main/java/com/garv/InternProject2/Controller/userController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/src/main/java/com/garv/InternProject2/Entity/Database.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/src/main/java/com/garv/InternProject2/Entity/QueryLog.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/src/main/java/com/garv/InternProject2/Entity/User.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/src/main/java/com/garv/InternProject2/Entity/UserDbAccess.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/src/main/java/com/garv/InternProject2/Exception/GlobalExceptionHandler.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/src/main/java/com/garv/InternProject2/InternProject2Application.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/src/main/java/com/garv/InternProject2/LoginRequest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/src/main/java/com/garv/InternProject2/NlQueryRequest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/src/main/java/com/garv/InternProject2/QueryRequest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/src/main/java/com/garv/InternProject2/RegisterRequest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/src/main/java/com/garv/InternProject2/Repository/DatabaseRepo.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/src/main/java/com/garv/InternProject2/Repository/QueryLogRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/src/main/java/com/garv/InternProject2/Repository/UserDbAccessRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/src/main/java/com/garv/InternProject2/Repository/userRepo.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/src/main/java/com/garv/InternProject2/Service/DataService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/src/main/java/com/garv/InternProject2/Service/GeminiService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/src/main/java/com/garv/InternProject2/Service/QueryService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/src/main/java/com/garv/InternProject2/Service/SchemaService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/src/main/java/com/garv/InternProject2/Service/UserService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/src/main/java/com/garv/InternProject2/Util/JwtFilter.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/InternProject2/src/main/java/com/garv/InternProject2/Util/JwtUtil.java" beforeDir="false" />
-    </list>
+    <list default="true" id="866c530c-bfa3-4858-b499-fd3d8e2b6a51" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -83,16 +40,23 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/garvp/Downloads/QueryGate/Backend/backend/src/main/java/com/garv/InternProject2"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/garvp/Downloads/QueryGate/Backend/backend/src/main/java/com/garv/InternProject2&quot;
   }
-}]]></component>
+}</component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-cffe25b9f5b3-intellij.indexing.shared.core-IU-253.28294.334" />
+      </set>
+    </attachedChunks>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">

@@ -11,6 +11,7 @@ export default function Dashboard() {
   const [activeDb, setActiveDb] = useState(null);
   const [queryResult, setQueryResult] = useState(null);
   const [theme, setTheme] = useState('light');
+  const [insertTextTrigger, setInsertTextTrigger] = useState(null);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -61,7 +62,11 @@ export default function Dashboard() {
 
       <div className="dashboard-body">
         {/* Left Sidebar (Object Explorer) */}
-        <Sidebar onSelectDb={setActiveDb} activeDb={activeDb} />
+        <Sidebar 
+          onSelectDb={setActiveDb} 
+          activeDb={activeDb} 
+          onInsertQuery={(text) => setInsertTextTrigger({ text, ts: Date.now() })}
+        />
 
         {/* Main Workspace */}
         <main className="workspace">
@@ -71,6 +76,7 @@ export default function Dashboard() {
                 activeDb={activeDb} 
                 onResult={setQueryResult}
                 theme={theme}
+                insertTextTrigger={insertTextTrigger}
               />
               <ResultsPanel result={queryResult} />
             </div>

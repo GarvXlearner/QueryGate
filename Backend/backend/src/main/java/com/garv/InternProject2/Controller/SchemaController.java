@@ -67,4 +67,16 @@ public class SchemaController {
 
         return ResponseEntity.ok(schemaService.getProcedures(user.getId(), dbId));
     }
+
+    @GetMapping("/{dbId}/procedures/{procName}")
+    public ResponseEntity<String> getProcedureDefinition(@PathVariable Long dbId, @PathVariable String procName, HttpServletRequest httpRequest) {
+        String username = (String) httpRequest.getAttribute("username");
+        User user = userRepository.findByUsername(username).orElse(null);
+
+        if (user == null) {
+            return ResponseEntity.status(401).body("User not found from token.");
+        }
+
+        return ResponseEntity.ok(schemaService.getProcedureDefinition(user.getId(), dbId, procName));
+    }
 }

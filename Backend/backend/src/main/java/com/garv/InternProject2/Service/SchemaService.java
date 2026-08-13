@@ -166,6 +166,35 @@ public class SchemaService {
 
         return procedures;
     }
+
+    public String getProcedureDefinition(Long userId, Long dbId, String procName) {
+        if (!hasAccess(userId, dbId)) {
+            return "Access denied.";
+        }
+
+        Database db = databaseRepo.findById(dbId).orElse(null);
+        if (db == null) {
+            return "Database not found.";
+        }
+
+        String url = "jdbc:mysql://" + db.getDbHost() + ":3307/" + db.getDbName();
+        String query = "SHOW CREATE PROCEDURE " + procName;
+        String definition = "";
+
+        try (Connection conn = DriverManager.getConnection(url, "root", db.getPassword());
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                definition = rs.getString("Create Procedure");
+            } else {
+                definition = "Procedure definition not found.";
+            }
+
+        } catch (SQLException e) {
+            definition = "-- Error fetching procedure definition: " + e.getMessage();
+        }
+
+        return definition;
+    }
 }
-
-

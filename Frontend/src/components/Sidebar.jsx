@@ -26,7 +26,7 @@ const TreeNode = ({ label, icon: Icon, children, onClick, defaultExpanded = fals
   );
 };
 
-export default function Sidebar({ onSelectDb, activeDb }) {
+export default function Sidebar({ onSelectDb, activeDb, onInsertQuery }) {
   const { token } = useAuth();
   const [databases, setDatabases] = useState([]);
   const [tablesByDb, setTablesByDb] = useState({});
@@ -113,6 +113,20 @@ export default function Sidebar({ onSelectDb, activeDb }) {
     }
   };
 
+  const fetchProcedureDefinition = async (dbId, procName) => {
+    try {
+      const res = await fetch(`/api/schema/${dbId}/procedures/${procName}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const text = await res.text();
+        if (onInsertQuery) onInsertQuery(text);
+      }
+    } catch (err) {
+      console.error('Error fetching procedure definition:', err);
+    }
+  };
+
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
@@ -160,14 +174,14 @@ export default function Sidebar({ onSelectDb, activeDb }) {
                       ))}
                     </TreeNode>
                     <TreeNode label="Views" icon={Folder}>
-                      {viewsByDb[db.id]?.map(view => (
+                      {viewsByDb[db.id || db.Id]?.map(view => (
                         <TreeNode key={view} label={view} icon={Table} />
                       ))}
                     </TreeNode>
                     <TreeNode label="Programmability" icon={Folder}>
                       <TreeNode label="Stored Procedures" icon={Folder}>
-                        {proceduresByDb[db.id]?.map(proc => (
-                          <TreeNode key={proc} label={proc} icon={Code} />
+                        {proceduresByDb[db.id || db.Id]?.map(proc => (
+                          <TreeNode key={proc} label={proc} icon={Code} onClick={() => fetchProcedureDefinition(db.id || db.Id, proc)} />
                         ))}
                       </TreeNode>
                     </TreeNode>
