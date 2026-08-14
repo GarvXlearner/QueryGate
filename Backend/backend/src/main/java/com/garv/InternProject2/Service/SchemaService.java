@@ -197,4 +197,92 @@ public class SchemaService {
 
         return definition;
     }
+
+    public java.util.Map<String, Object> getErdData(Long userId, Long dbId) {
+        if (!hasAccess(userId, dbId)) {
+            return java.util.Collections.singletonMap("error", "Access denied.");
+        }
+
+        Database db = databaseRepo.findById(dbId).orElse(null);
+        if (db == null) {
+            return java.util.Collections.singletonMap("error", "Database not found.");
+        }
+
+        String url = "jdbc:mysql://" + db.getDbHost() + ":3307/INFORMATION_SCHEMA";
+        java.util.Map<String, Object> result = new java.util.HashMap<>();
+        java.util.List<java.util.Map<String, Object>> tablesList = new java.util.ArrayList<>();
+        java.util.List<java.util.Map<String, String>> edgesList = new java.util.ArrayList<>();
+
+        // 1. Fetch tables and their columns
+        String colQuery = "SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE, COLUMN_KEY " +
+                          "FROM INFORMATION_SCHEMA.COLUMNS " +
+                          "WHERE TABLE_SCHEMA = ? ORDER BY TABLE_NAME, ORDINAL_POSITION";
+
+        try (Connection conn = DriverManager.getConnection(url, "root", db.getPassword());
+             PreparedStatement stmt = conn.prepareStatement(colQuery)) {
+
+            stmt.setString(1, db.getDbName());
+            ResultSet rs = stmt.executeQuery();
+
+            String currentTable = null;
+            java.util.List<java.util.Map<String, Object>> currentColumns = new java.util.ArrayList<>();
+
+            while (rs.next()) {
+                String tableName = rs.getString("TABLE_NAME");
+                if (currentTable == null || !currentTable.equals(tableName)) {
+                    if (currentTable != null) {
+                        java.util.Map<String, Object> tableObj = new java.util.HashMap<>();
+                        tableObj.put("name", currentTable);
+                        tableObj.put("columns", currentColumns);
+                        tablesList.add(tableObj);
+                    }
+                    currentTable = tableName;
+                    currentColumns = new java.util.ArrayList<>();
+                }
+
+                java.util.Map<String, Object> colObj = new java.util.HashMap<>();
+                colObj.put("name", rs.getString("COLUMN_NAME"));
+                colObj.put("type", rs.getString("DATA_TYPE"));
+                colObj.put("isPrimary", "PRI".equals(rs.getString("COLUMN_KEY")));
+                currentColumns.add(colObj);
+            }
+            if (currentTable != null) {
+                java.util.Map<String, Object> tableObj = new java.util.HashMap<>();
+                tableObj.put("name", currentTable);
+                tableObj.put("columns", currentColumns);
+                tablesList.add(tableObj);
+            }
+
+        } catch (SQLException e) {
+            return java.util.Collections.singletonMap("error", "Error fetching columns: " + e.getMessage());
+        }
+
+        // 2. Fetch Foreign Keys
+        String fkQuery = "SELECT TABLE_NAME, COLUMN_NAME, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME " +
+                         "FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE " +
+                         "WHERE TABLE_SCHEMA = ? AND REFERENCED_TABLE_NAME IS NOT NULL";
+
+        try (Connection conn = DriverManager.getConnection(url, "root", db.getPassword());
+             PreparedStatement stmt = conn.prepareStatement(fkQuery)) {
+
+            stmt.setString(1, db.getDbName());
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                java.util.Map<String, String> edge = new java.util.HashMap<>();
+                edge.put("source", rs.getString("TABLE_NAME"));
+                edge.put("sourceHandle", rs.getString("COLUMN_NAME"));
+                edge.put("target", rs.getString("REFERENCED_TABLE_NAME"));
+                edge.put("targetHandle", rs.getString("REFERENCED_COLUMN_NAME"));
+                edgesList.add(edge);
+            }
+
+        } catch (SQLException e) {
+            return java.util.Collections.singletonMap("error", "Error fetching foreign keys: " + e.getMessage());
+        }
+
+        result.put("tables", tablesList);
+        result.put("edges", edgesList);
+        return result;
+    }
 }

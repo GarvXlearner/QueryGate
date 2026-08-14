@@ -79,4 +79,16 @@ public class SchemaController {
 
         return ResponseEntity.ok(schemaService.getProcedureDefinition(user.getId(), dbId, procName));
     }
+
+    @GetMapping("/{dbId}/erd")
+    public ResponseEntity<java.util.Map<String, Object>> getErdData(@PathVariable Long dbId, HttpServletRequest httpRequest) {
+        String username = (String) httpRequest.getAttribute("username");
+        User user = userRepository.findByUsername(username).orElse(null);
+
+        if (user == null) {
+            return ResponseEntity.status(401).body(java.util.Collections.singletonMap("error", "User not found from token."));
+        }
+
+        return ResponseEntity.ok(schemaService.getErdData(user.getId(), dbId));
+    }
 }

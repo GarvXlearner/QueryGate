@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import Sidebar from '../components/Sidebar';
 import QueryEditor from '../components/QueryEditor';
 import ResultsPanel from '../components/ResultsPanel';
+import ERDiagram from '../components/ERDiagram';
 import { LogOut, Database, Moon, Sun, Play, Square, FolderOpen, Save, X } from 'lucide-react';
 import './Dashboard.css';
 
@@ -37,6 +38,7 @@ export default function Dashboard() {
     const newId = Date.now().toString();
     const newTab = {
       id: newId,
+      type: 'sql',
       title: `SQLQuery${tabCounter}.sql`,
       db: activeDb,
       query: '',
@@ -45,6 +47,28 @@ export default function Dashboard() {
     setTabs(prev => [...prev, newTab]);
     setActiveTabId(newId);
     setTabCounter(prev => prev + 1);
+  };
+
+  const handleOpenErd = (dbToOpen) => {
+    const db = dbToOpen || activeDb;
+    if (!db) return;
+    
+    // Check if an ERD tab already exists for this DB
+    const existing = tabs.find(t => t.type === 'erd' && (t.db.id || t.db.Id) === (db.id || db.Id));
+    if (existing) {
+      setActiveTabId(existing.id);
+      return;
+    }
+
+    const newId = Date.now().toString();
+    const newTab = {
+      id: newId,
+      type: 'erd',
+      title: `${db.dbName} - ER Diagram`,
+      db: db
+    };
+    setTabs(prev => [...prev, newTab]);
+    setActiveTabId(newId);
   };
 
   const closeTab = (id) => {
@@ -118,6 +142,7 @@ export default function Dashboard() {
           onSelectDb={setActiveDb} 
           activeDb={activeDb} 
           onInsertQuery={handleInsertQuery}
+          onOpenErd={handleOpenErd}
         />
 
         {/* Main Workspace */}
@@ -150,13 +175,19 @@ export default function Dashboard() {
                       top: 0, left: 0, right: 0, bottom: 0 
                     }}
                   >
-                    <QueryEditor 
-                      activeDb={t.db} 
-                      onResult={(res) => updateTabResult(t.id, res)}
-                      theme={theme}
-                      insertTextTrigger={t.id === activeTabId ? insertTextTrigger : null}
-                    />
-                    <ResultsPanel result={t.result} />
+                    {t.type === 'erd' ? (
+                      <ERDiagram dbId={t.db.id || t.db.Id} />
+                    ) : (
+                      <>
+                        <QueryEditor 
+                          activeDb={t.db} 
+                          onResult={(res) => updateTabResult(t.id, res)}
+                          theme={theme}
+                          insertTextTrigger={t.id === activeTabId ? insertTextTrigger : null}
+                        />
+                        <ResultsPanel result={t.result} />
+                      </>
+                    )}
                   </div>
                 ))}
               </div>

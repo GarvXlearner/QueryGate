@@ -26,7 +26,7 @@ const TreeNode = ({ label, icon: Icon, children, onClick, defaultExpanded = fals
   );
 };
 
-export default function Sidebar({ onSelectDb, activeDb, onInsertQuery }) {
+export default function Sidebar({ onSelectDb, activeDb, onInsertQuery, onOpenErd }) {
   const { token } = useAuth();
   const [activeTab, setActiveTab] = useState('explorer'); // 'explorer' or 'history'
   const [history, setHistory] = useState([]);
@@ -231,6 +231,17 @@ export default function Sidebar({ onSelectDb, activeDb, onInsertQuery }) {
                               <TreeNode key={proc} label={proc} icon={Code} onClick={() => fetchProcedureDefinition(db.id || db.Id, proc)} />
                             ))}
                           </TreeNode>
+                        </TreeNode>
+                        <TreeNode label="Database Diagrams" icon={Folder}>
+                          <div 
+                            style={{ padding: '4px 8px', fontSize: '12px', cursor: 'pointer', color: 'var(--accent-primary)' }}
+                            onClick={() => {
+                              if (onOpenErd) onOpenErd(db);
+                            }}
+                          >
+                            <Plug size={12} style={{ display: 'inline', marginRight: '4px' }} />
+                            View ER Diagram
+                          </div>
                         </TreeNode>
                       </TreeNode>
                     </div>
