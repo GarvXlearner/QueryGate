@@ -33,6 +33,10 @@ public class Database {
         return Id;
     }
 
+    public void setId(Long id) {
+        this.Id = id;
+    }
+
     public String getDbName() {
         return dbName;
     }
