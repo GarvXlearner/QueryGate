@@ -15,6 +15,8 @@ public class Database {
     private String dbHost;
     private String serverName;
     private String password;
+    private String username;
+    private String port;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -62,6 +64,12 @@ public class Database {
 
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+    
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+    
+    public String getPort() { return port; }
+    public void setPort(String port) { this.port = port; }
 
     public Server getServerWorkspace() { return serverWorkspace; }
     public void setServerWorkspace(Server serverWorkspace) { this.serverWorkspace = serverWorkspace; }

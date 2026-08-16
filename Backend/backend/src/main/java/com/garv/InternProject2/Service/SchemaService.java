@@ -36,11 +36,13 @@ public class SchemaService {
             return error;
         }
         List<String> tables = new ArrayList<>();
-        String url = "jdbc:mysql://" + db.getDbHost() + ":3307/INFORMATION_SCHEMA";
+        String port = db.getPort() != null ? db.getPort() : "3306";
+        String url = "jdbc:mysql://" + db.getDbHost() + ":" + port + "/INFORMATION_SCHEMA";
+        String username = db.getUsername() != null ? db.getUsername() : "root";
 
         String query = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = ?";
 
-        try (Connection conn = DriverManager.getConnection(url, "root", db.getPassword());
+        try (Connection conn = DriverManager.getConnection(url, username, db.getPassword());
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, db.getDbName());
@@ -72,11 +74,13 @@ public class SchemaService {
         }
 
         List<String> columns = new ArrayList<>();
-        String url = "jdbc:mysql://" + db.getDbHost() + ":3307/INFORMATION_SCHEMA";
+        String port = db.getPort() != null ? db.getPort() : "3306";
+        String url = "jdbc:mysql://" + db.getDbHost() + ":" + port + "/INFORMATION_SCHEMA";
+        String username = db.getUsername() != null ? db.getUsername() : "root";
 
         String query = "SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?";
 
-        try (Connection conn = DriverManager.getConnection(url, "root", db.getPassword());
+        try (Connection conn = DriverManager.getConnection(url, username, db.getPassword());
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, db.getDbName());
@@ -110,11 +114,13 @@ public class SchemaService {
         }
 
         List<String> views = new ArrayList<>();
-        String url = "jdbc:mysql://" + db.getDbHost() + ":3307/INFORMATION_SCHEMA";
+        String port = db.getPort() != null ? db.getPort() : "3306";
+        String url = "jdbc:mysql://" + db.getDbHost() + ":" + port + "/INFORMATION_SCHEMA";
+        String username = db.getUsername() != null ? db.getUsername() : "root";
 
         String query = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = ?";
 
-        try (Connection conn = DriverManager.getConnection(url, "root", db.getPassword());
+        try (Connection conn = DriverManager.getConnection(url, username, db.getPassword());
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, db.getDbName());
@@ -146,11 +152,13 @@ public class SchemaService {
         }
 
         List<String> procedures = new ArrayList<>();
-        String url = "jdbc:mysql://" + db.getDbHost() + ":3307/INFORMATION_SCHEMA";
+        String port = db.getPort() != null ? db.getPort() : "3306";
+        String url = "jdbc:mysql://" + db.getDbHost() + ":" + port + "/INFORMATION_SCHEMA";
+        String username = db.getUsername() != null ? db.getUsername() : "root";
 
         String query = "SELECT ROUTINE_NAME FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_SCHEMA = ? AND ROUTINE_TYPE = 'PROCEDURE'";
 
-        try (Connection conn = DriverManager.getConnection(url, "root", db.getPassword());
+        try (Connection conn = DriverManager.getConnection(url, username, db.getPassword());
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, db.getDbName());
@@ -177,11 +185,14 @@ public class SchemaService {
             return "Database not found.";
         }
 
-        String url = "jdbc:mysql://" + db.getDbHost() + ":3307/" + db.getDbName();
+        String port = db.getPort() != null ? db.getPort() : "3306";
+        String url = "jdbc:mysql://" + db.getDbHost() + ":" + port + "/" + db.getDbName();
+        String username = db.getUsername() != null ? db.getUsername() : "root";
+        
         String query = "SHOW CREATE PROCEDURE " + procName;
         String definition = "";
 
-        try (Connection conn = DriverManager.getConnection(url, "root", db.getPassword());
+        try (Connection conn = DriverManager.getConnection(url, username, db.getPassword());
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             ResultSet rs = stmt.executeQuery();
@@ -208,7 +219,10 @@ public class SchemaService {
             return java.util.Collections.singletonMap("error", "Database not found.");
         }
 
-        String url = "jdbc:mysql://" + db.getDbHost() + ":3307/INFORMATION_SCHEMA";
+        String port = db.getPort() != null ? db.getPort() : "3306";
+        String url = "jdbc:mysql://" + db.getDbHost() + ":" + port + "/INFORMATION_SCHEMA";
+        String username = db.getUsername() != null ? db.getUsername() : "root";
+        
         java.util.Map<String, Object> result = new java.util.HashMap<>();
         java.util.List<java.util.Map<String, Object>> tablesList = new java.util.ArrayList<>();
         java.util.List<java.util.Map<String, String>> edgesList = new java.util.ArrayList<>();
@@ -218,7 +232,7 @@ public class SchemaService {
                           "FROM INFORMATION_SCHEMA.COLUMNS " +
                           "WHERE TABLE_SCHEMA = ? ORDER BY TABLE_NAME, ORDINAL_POSITION";
 
-        try (Connection conn = DriverManager.getConnection(url, "root", db.getPassword());
+        try (Connection conn = DriverManager.getConnection(url, username, db.getPassword());
              PreparedStatement stmt = conn.prepareStatement(colQuery)) {
 
             stmt.setString(1, db.getDbName());
@@ -262,7 +276,7 @@ public class SchemaService {
                          "FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE " +
                          "WHERE TABLE_SCHEMA = ? AND REFERENCED_TABLE_NAME IS NOT NULL";
 
-        try (Connection conn = DriverManager.getConnection(url, "root", db.getPassword());
+        try (Connection conn = DriverManager.getConnection(url, username, db.getPassword());
              PreparedStatement stmt = conn.prepareStatement(fkQuery)) {
 
             stmt.setString(1, db.getDbName());

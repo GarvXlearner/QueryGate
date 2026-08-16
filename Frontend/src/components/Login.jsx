@@ -5,7 +5,8 @@ function Login({ onLoginSuccess }) {
     const [password, setPassword] = useState("");
 
     const handleLogin = () => {
-        fetch("http://localhost:8080/api/auth/login", {
+        const apiUrl = import.meta.env.VITE_API_URL || '';
+        fetch(`${apiUrl}/api/auth/login`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

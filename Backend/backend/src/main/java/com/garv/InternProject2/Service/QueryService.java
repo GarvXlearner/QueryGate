@@ -82,8 +82,9 @@ public class QueryService {
             return "Database not found.";
         }
 
-        String url = "jdbc:mysql://" + db.getDbHost() + ":3307/" + db.getDbName();
-        String username = "root";
+        String port = db.getPort() != null ? db.getPort() : "3306";
+        String url = "jdbc:mysql://" + db.getDbHost() + ":" + port + "/" + db.getDbName();
+        String username = db.getUsername() != null ? db.getUsername() : "root";
         String password = db.getPassword();
 
         try (Connection conn = DriverManager.getConnection(url, username, password)) {
