@@ -33,7 +33,8 @@ public class WorkspaceController {
 
     @PostMapping("/create")
     public ResponseEntity<?> createServer(@RequestBody Map<String, String> request, HttpServletRequest httpRequest) {
-        User user = (User) httpRequest.getAttribute("user");
+        String username = (String) httpRequest.getAttribute("username");
+        User user = userRepository.findByUsername(username).orElse(null);
         if (user == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
         }
@@ -57,7 +58,8 @@ public class WorkspaceController {
 
     @PostMapping("/{serverId}/database")
     public ResponseEntity<?> addDatabase(@PathVariable Long serverId, @RequestBody Map<String, String> request, HttpServletRequest httpRequest) {
-        User user = (User) httpRequest.getAttribute("user");
+        String username = (String) httpRequest.getAttribute("username");
+        User user = userRepository.findByUsername(username).orElse(null);
         if (user == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
         }
