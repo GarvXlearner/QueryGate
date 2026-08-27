@@ -101,7 +101,10 @@ export default function TeamPanel({ onClose }) {
             <div>
               <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Workspace Invite Code</div>
               <div style={{ fontSize: '18px', fontWeight: 'bold', letterSpacing: '2px', color: 'var(--accent-primary)' }}>
-                {localStorage.getItem('activeJoinCode') || 'N/A'}
+                {(() => {
+                  const code = localStorage.getItem('activeJoinCode');
+                  return (code && code !== 'undefined' && code !== '') ? code : 'N/A';
+                })()}
               </div>
             </div>
             <button 
