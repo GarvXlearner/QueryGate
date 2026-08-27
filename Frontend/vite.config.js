@@ -15,5 +15,10 @@ export default defineConfig({
         changeOrigin: true
       }
     }
+  },
+  resolve: {
+    alias: {
+      'monaco-editor/esm/vs/editor/editor.api.js': 'monaco-editor'
+    }
   }
 })

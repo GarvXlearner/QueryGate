@@ -8,6 +8,7 @@ import com.garv.InternProject2.Repository.DatabaseRepo;
 import com.garv.InternProject2.Repository.ServerRepository;
 import com.garv.InternProject2.Repository.UserDbAccessRepository;
 import com.garv.InternProject2.Repository.userRepo;
+import com.garv.InternProject2.Repository.ServerMemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +31,9 @@ public class WorkspaceController {
 
     @Autowired
     private userRepo userRepository;
+
+    @Autowired
+    private ServerMemberRepository serverMemberRepository;
 
     @PostMapping("/create")
     public ResponseEntity<?> createServer(@RequestBody Map<String, String> request, HttpServletRequest httpRequest) {
@@ -84,6 +88,23 @@ public class WorkspaceController {
             return ResponseEntity.badRequest().body(Map.of("error", "All connection details are required"));
         }
 
+        // Test the database connection before saving
+        String url = "jdbc:mysql://" + host + ":" + port + "/";
+        try (java.sql.Connection conn = java.sql.DriverManager.getConnection(url, username, password)) {
+            // Connection to the server was successful. Now check if the database exists.
+            boolean exists = false;
+            try (java.sql.ResultSet rs = conn.createStatement().executeQuery("SHOW DATABASES LIKE '" + dbName + "'")) {
+                if (rs.next()) {
+                    exists = true;
+                }
+            }
+            if (!exists) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Database '" + dbName + "' does not exist on this server."));
+            }
+        } catch (java.sql.SQLException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Database connection failed. Please check your credentials: " + e.getMessage()));
+        }
+
         Database db = new Database();
         db.setDbName(dbName);
         db.setDbHost(host);
@@ -105,5 +126,143 @@ public class WorkspaceController {
                 "message", "Database connected successfully",
                 "databaseId", db.getId()
         ));
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<?> getUserWorkspaces(HttpServletRequest httpRequest) {
+        String authUsername = (String) httpRequest.getAttribute("username");
+        User user = userRepository.findByUsername(authUsername).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+
+        java.util.List<Server> servers = serverRepository.findByOwner(user);
+        
+        java.util.List<Map<String, Object>> response = servers.stream().map(server -> {
+            Map<String, Object> map = new java.util.HashMap<>();
+            map.put("id", server.getId());
+            map.put("name", server.getName());
+            map.put("createdAt", server.getCreatedAt() != null ? server.getCreatedAt().toString() : "");
+            return map;
+        }).toList();
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{serverId}/members")
+    public ResponseEntity<?> getServerMembers(@PathVariable Long serverId, HttpServletRequest httpRequest) {
+        String authUsername = (String) httpRequest.getAttribute("username");
+        User user = userRepository.findByUsername(authUsername).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+
+        Server server = serverRepository.findById(serverId).orElse(null);
+        if (server == null) {
+            return ResponseEntity.status(404).body(Map.of("error", "Workspace not found"));
+        }
+
+        if (!server.getOwner().getId().equals(user.getId())) {
+            return ResponseEntity.status(403).body(Map.of("error", "Only owner can view members"));
+        }
+
+        java.util.List<com.garv.InternProject2.Entity.ServerMember> members = serverMemberRepository.findByServer(server);
+        java.util.List<Map<String, Object>> response = members.stream().map(m -> {
+            Map<String, Object> map = new java.util.HashMap<>();
+            map.put("userId", m.getUser().getId());
+            map.put("username", m.getUser().getUsername());
+            map.put("role", m.getRole().name());
+            map.put("joinedAt", m.getJoinedAt() != null ? m.getJoinedAt().toString() : "");
+            return map;
+        }).toList();
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{serverId}/databases")
+    public ResponseEntity<?> getServerDatabases(@PathVariable Long serverId, HttpServletRequest httpRequest) {
+        String authUsername = (String) httpRequest.getAttribute("username");
+        User user = userRepository.findByUsername(authUsername).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+
+        Server server = serverRepository.findById(serverId).orElse(null);
+        if (server == null) {
+            return ResponseEntity.status(404).body(Map.of("error", "Workspace not found"));
+        }
+
+        boolean isOwner = server.getOwner().getId().equals(user.getId());
+        boolean isMember = serverMemberRepository.existsByServerAndUser(server, user);
+        
+        if (!isOwner && !isMember) {
+            return ResponseEntity.status(403).body(Map.of("error", "You do not have access to this workspace"));
+        }
+
+        java.util.List<Database> databases = databaseRepository.findByServerWorkspace(server);
+        java.util.List<Map<String, Object>> response = databases.stream().map(db -> {
+            Map<String, Object> map = new java.util.HashMap<>();
+            map.put("id", db.getId());
+            map.put("name", db.getDbName());
+            return map;
+        }).toList();
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{serverId}/database/{dbId}/access")
+    public ResponseEntity<?> grantAccess(@PathVariable Long serverId, @PathVariable Long dbId, @RequestBody Map<String, String> request, HttpServletRequest httpRequest) {
+        String authUsername = (String) httpRequest.getAttribute("username");
+        User user = userRepository.findByUsername(authUsername).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+
+        Server server = serverRepository.findById(serverId).orElse(null);
+        if (server == null) {
+            return ResponseEntity.status(404).body(Map.of("error", "Workspace not found"));
+        }
+
+        if (!server.getOwner().getId().equals(user.getId())) {
+            return ResponseEntity.status(403).body(Map.of("error", "Only owner can grant access"));
+        }
+
+        Long targetUserId = Long.parseLong(request.get("userId"));
+        User targetUser = userRepository.findById(targetUserId).orElse(null);
+        if (targetUser == null) {
+            return ResponseEntity.status(404).body(Map.of("error", "Target user not found"));
+        }
+
+        Database db = databaseRepository.findById(dbId).orElse(null);
+        if (db == null || !db.getServerWorkspace().getId().equals(serverId)) {
+            return ResponseEntity.status(404).body(Map.of("error", "Database not found in this workspace"));
+        }
+
+        String permissionStr = request.get("permission");
+        if (permissionStr == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Permission is required"));
+        }
+
+        if (permissionStr.equals("NONE")) {
+            // Remove access
+            UserDbAccess access = userDbAccessRepository.findByUserAndDb(targetUser, db).orElse(null);
+            if (access != null) {
+                userDbAccessRepository.delete(access);
+            }
+            return ResponseEntity.ok(Map.of("message", "Access removed"));
+        }
+
+        UserDbAccess.Permission permission;
+        try {
+            permission = UserDbAccess.Permission.valueOf(permissionStr);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Invalid permission"));
+        }
+
+        UserDbAccess access = userDbAccessRepository.findByUserAndDb(targetUser, db).orElse(new UserDbAccess());
+        access.setUser(targetUser);
+        access.setDb(db);
+        access.setRight(permission);
+        userDbAccessRepository.save(access);
+
+        return ResponseEntity.ok(Map.of("message", "Access granted successfully"));
     }
 }

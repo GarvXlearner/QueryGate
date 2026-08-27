@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Server, Users, ArrowRight, Database, CheckCircle, Loader } from 'lucide-react';
 import './Onboarding.css';
@@ -12,6 +12,9 @@ export default function Onboarding() {
   // Form State
   const [serverName, setServerName] = useState('');
   const [serverId, setServerId] = useState(null);
+  
+  const [workspaces, setWorkspaces] = useState([]);
+  const [loadingWorkspaces, setLoadingWorkspaces] = useState(true);
 
   const [dbForm, setDbForm] = useState({
     dbName: '',
@@ -25,6 +28,28 @@ export default function Onboarding() {
     const token = localStorage.getItem('token');
     return token ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
   };
+
+
+  
+  useEffect(() => {
+    const fetchWorkspaces = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || '';
+        const res = await fetch(`${apiUrl}/api/workspace/list`, {
+          headers: getAuthHeader()
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setWorkspaces(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch workspaces', err);
+      } finally {
+        setLoadingWorkspaces(false);
+      }
+    };
+    fetchWorkspaces();
+  }, []);
 
   const handleCreateServer = async (e) => {
     e.preventDefault();
@@ -40,6 +65,8 @@ export default function Onboarding() {
       const data = await res.json();
       if (res.ok) {
         setServerId(data.serverId);
+        localStorage.setItem('activeServerId', data.serverId);
+        localStorage.setItem('activeServerName', data.serverName);
         setStep('connectDb');
       } else {
         setError(data.error || 'Failed to create workspace');
@@ -83,7 +110,26 @@ export default function Onboarding() {
       {error && <div style={{ color: 'red', marginBottom: '16px', padding: '12px', background: 'rgba(255,0,0,0.1)', borderRadius: '8px' }}>{error}</div>}
 
       {step === 'select' && (
-        <div className="onboarding-cards">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          
+          {workspaces.length > 0 && (
+            <div className="existing-workspaces glass-panel" style={{ padding: '24px', textAlign: 'left' }}>
+              <h2 style={{ marginBottom: '16px', fontSize: '1.2rem', color: 'var(--text-secondary)' }}>Your Existing Workspaces</h2>
+              <div className="workspace-list" style={{ display: 'grid', gap: '12px' }}>
+                {workspaces.map(ws => (
+                  <div key={ws.id} className="workspace-item" onClick={() => { localStorage.setItem('activeServerId', ws.id); localStorage.setItem('activeServerName', ws.name); navigate('/'); }} style={{ padding: '16px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', cursor: 'pointer', border: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <Server size={24} color="var(--accent-primary)" />
+                      <span style={{ fontWeight: '500', fontSize: '1.1rem' }}>{ws.name}</span>
+                    </div>
+                    <ArrowRight size={20} color="var(--text-muted)" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="onboarding-cards">
           <div className="onboarding-card glass-panel" onClick={() => setStep('createServer')}>
             <div className="card-icon-wrapper blue">
               <Server size={32} />
@@ -104,6 +150,7 @@ export default function Onboarding() {
             <div className="card-action">
               Coming Soon...
             </div>
+          </div>
           </div>
         </div>
       )}

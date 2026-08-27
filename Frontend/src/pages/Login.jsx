@@ -13,16 +13,32 @@ export default function Login() {
   const navigate = useNavigate();
 
   const handleGoogleSuccess = async (credentialResponse) => {
-    // In the future, send this token to the backend for verification
-    console.log("Google JWT Token:", credentialResponse.credential);
-    // login(backendToken);
-    // navigate('/onboarding');
-    setError('Google login is pending backend integration. Check console for token.');
+    try {
+      const res = await fetch('/api/auth/google-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential: credentialResponse.credential })
+      });
+      const data = await res.text();
+      if (res.ok) {
+        login(data); // JWT token
+        navigate('/onboarding');
+      } else {
+        setError(data);
+      }
+    } catch (err) {
+      setError('Failed to connect to the server for Google Login.');
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (/\s/.test(username)) {
+      setError('Username cannot contain spaces.');
+      return;
+    }
 
     const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
     

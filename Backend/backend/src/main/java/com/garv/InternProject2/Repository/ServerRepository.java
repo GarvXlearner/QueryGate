@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface ServerRepository extends JpaRepository<Server, Long> {
     Optional<Server> findByJoinCode(String joinCode);
+    java.util.List<Server> findByOwner(com.garv.InternProject2.Entity.User owner);
 }

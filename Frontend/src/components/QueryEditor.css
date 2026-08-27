@@ -118,3 +118,26 @@
 .sql-textarea::placeholder {
   color: var(--text-muted);
 }
+
+/* Yjs Remote Cursors */
+.yRemoteSelection {
+  background-color: var(--theme-color, rgba(250, 129, 0, 0.5));
+}
+.yRemoteSelectionHead {
+  position: absolute;
+  border-left: var(--theme-color, orange) solid 2px;
+  height: 100%;
+  box-sizing: border-box;
+}
+.yRemoteSelectionHead::after {
+  position: absolute;
+  content: attr(data-clientid);
+  background-color: var(--theme-color, orange);
+  color: white;
+  border-radius: 4px;
+  font-size: 10px;
+  padding: 2px 4px;
+  left: 0px;
+  top: -16px;
+  white-space: nowrap;
+}

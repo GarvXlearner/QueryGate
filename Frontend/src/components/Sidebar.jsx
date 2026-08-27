@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Database, Table, Columns, ChevronRight, ChevronDown, Folder, Code, Server, Plug, Clock } from 'lucide-react';
+import ConnectDbModal from './ConnectDbModal';
 import './Sidebar.css';
 
 const TreeNode = ({ label, icon: Icon, children, onClick, defaultExpanded = false }) => {
@@ -30,8 +31,10 @@ export default function Sidebar({ onSelectDb, activeDb, onInsertQuery, onOpenErd
   const { token } = useAuth();
   const [activeTab, setActiveTab] = useState('explorer'); // 'explorer' or 'history'
   const [history, setHistory] = useState([]);
+  const [showConnectModal, setShowConnectModal] = useState(false);
   
   const [databases, setDatabases] = useState([]);
+  const [userAccess, setUserAccess] = useState([]);
   const [tablesByDb, setTablesByDb] = useState({});
   const [columnsByTable, setColumnsByTable] = useState({});
   const [viewsByDb, setViewsByDb] = useState({});
@@ -49,12 +52,34 @@ export default function Sidebar({ onSelectDb, activeDb, onInsertQuery, onOpenErd
 
   const fetchDatabases = async () => {
     try {
-      const res = await fetch('/api/data/my-access', {
+      const serverId = localStorage.getItem('activeServerId');
+      if (!serverId) {
+        console.warn('No activeServerId found in localStorage');
+        return;
+      }
+
+      // Fetch all databases in this workspace
+      const resDbs = await fetch(`/api/workspace/${serverId}/databases`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      if (res.ok) {
-        const data = await res.json();
-        setDatabases(data);
+      
+      // Fetch user's access rights
+      const resAccess = await fetch('/api/data/my-access', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (resDbs.ok && resAccess.ok) {
+        const dbData = await resDbs.json();
+        const accessData = await resAccess.json();
+        setDatabases(dbData);
+        setUserAccess(accessData);
+      } else {
+        console.error('Failed to fetch:', {
+          dbsStatus: resDbs.status,
+          accessStatus: resAccess.status,
+          dbsText: await resDbs.text(),
+          accessText: await resAccess.text()
+        });
       }
     } catch (err) {
       console.error('Error fetching databases:', err);
@@ -180,69 +205,75 @@ export default function Sidebar({ onSelectDb, activeDb, onInsertQuery, onOpenErd
       {activeTab === 'explorer' && (
         <>
           <div className="sidebar-toolbar">
-            <button className="sidebar-btn" title="Connect">
+            <button className="sidebar-btn" title="Connect" onClick={() => setShowConnectModal(true)}>
               <Plug size={14} className="icon-green" /> Connect <ChevronDown size={12} />
             </button>
           </div>
           <div className="tree-container">
-            <TreeNode label="localhost (SQL Server - admin)" icon={Server} defaultExpanded={true}>
+            <TreeNode label={`${localStorage.getItem('activeServerName') || 'Workspace'} (admin)`} icon={Server} defaultExpanded={true}>
               <TreeNode label="Databases" icon={Folder} defaultExpanded={true}>
-                {databases.map(access => {
-                  const db = access.db;
-                  const isActive = (activeDb?.id || activeDb?.Id) === (db.id || db.Id);
+                {databases.map(db => {
+                  const access = userAccess.find(a => a.db.id === db.id || a.db.Id === db.id);
+                  const hasAccess = !!access;
+                  const isActive = (activeDb?.id || activeDb?.Id) === db.id;
                   
                   return (
-                    <div key={db.id || db.Id} className={`db-wrapper ${isActive ? 'active' : ''}`}>
+                    <div key={db.id} className={`db-wrapper ${isActive ? 'active' : ''}`} style={{ opacity: hasAccess ? 1 : 0.5 }}>
                       <TreeNode 
-                        label={db.dbName} 
+                        label={db.name || db.dbName} 
                         icon={Database} 
                         onClick={() => {
+                          if (!hasAccess) return;
                           onSelectDb(db);
-                          const dbId = db.id || db.Id;
+                          const dbId = db.id;
                           fetchTables(dbId);
                           fetchViews(dbId);
                           fetchProcedures(dbId);
                         }}
                       >
-                        <TreeNode label="Tables" icon={Folder}>
-                          {tablesByDb[db.id || db.Id]?.map(table => (
-                            <TreeNode 
-                              key={table} 
-                              label={table} 
-                              icon={Table}
-                              onClick={() => fetchColumns(db.id || db.Id, table)}
-                            >
-                              <TreeNode label="Columns" icon={Folder}>
-                                {columnsByTable[`${db.id || db.Id}-${table}`]?.map(col => (
-                                  <TreeNode key={col} label={col} icon={Columns} />
+                        {hasAccess && (
+                          <>
+                            <TreeNode label="Tables" icon={Folder}>
+                              {tablesByDb[db.id]?.map(table => (
+                                <TreeNode 
+                                  key={table} 
+                                  label={table} 
+                                  icon={Table}
+                                  onClick={() => fetchColumns(db.id, table)}
+                                >
+                                  <TreeNode label="Columns" icon={Folder}>
+                                    {columnsByTable[`${db.id}-${table}`]?.map(col => (
+                                      <TreeNode key={col} label={col} icon={Columns} />
+                                    ))}
+                                  </TreeNode>
+                                </TreeNode>
+                              ))}
+                            </TreeNode>
+                            <TreeNode label="Views" icon={Folder}>
+                              {viewsByDb[db.id]?.map(view => (
+                                <TreeNode key={view} label={view} icon={Table} />
+                              ))}
+                            </TreeNode>
+                            <TreeNode label="Programmability" icon={Folder}>
+                              <TreeNode label="Stored Procedures" icon={Folder}>
+                                {proceduresByDb[db.id]?.map(proc => (
+                                  <TreeNode key={proc} label={proc} icon={Code} onClick={() => fetchProcedureDefinition(db.id, proc)} />
                                 ))}
                               </TreeNode>
                             </TreeNode>
-                          ))}
-                        </TreeNode>
-                        <TreeNode label="Views" icon={Folder}>
-                          {viewsByDb[db.id || db.Id]?.map(view => (
-                            <TreeNode key={view} label={view} icon={Table} />
-                          ))}
-                        </TreeNode>
-                        <TreeNode label="Programmability" icon={Folder}>
-                          <TreeNode label="Stored Procedures" icon={Folder}>
-                            {proceduresByDb[db.id || db.Id]?.map(proc => (
-                              <TreeNode key={proc} label={proc} icon={Code} onClick={() => fetchProcedureDefinition(db.id || db.Id, proc)} />
-                            ))}
-                          </TreeNode>
-                        </TreeNode>
-                        <TreeNode label="Database Diagrams" icon={Folder}>
-                          <div 
-                            style={{ padding: '4px 8px', fontSize: '12px', cursor: 'pointer', color: 'var(--accent-primary)' }}
-                            onClick={() => {
-                              if (onOpenErd) onOpenErd(db);
-                            }}
-                          >
-                            <Plug size={12} style={{ display: 'inline', marginRight: '4px' }} />
-                            View ER Diagram
-                          </div>
-                        </TreeNode>
+                            <TreeNode label="Database Diagrams" icon={Folder}>
+                              <div 
+                                style={{ padding: '4px 8px', fontSize: '12px', cursor: 'pointer', color: 'var(--accent-primary)' }}
+                                onClick={() => {
+                                  if (onOpenErd) onOpenErd(db);
+                                }}
+                              >
+                                <Plug size={12} style={{ display: 'inline', marginRight: '4px' }} />
+                                View ER Diagram
+                              </div>
+                            </TreeNode>
+                          </>
+                        )}
                       </TreeNode>
                     </div>
                   );
@@ -301,6 +332,13 @@ export default function Sidebar({ onSelectDb, activeDb, onInsertQuery, onOpenErd
             ))
           )}
         </div>
+      )}
+      
+      {showConnectModal && (
+        <ConnectDbModal 
+          onClose={() => setShowConnectModal(false)} 
+          onSuccess={fetchDatabases} 
+        />
       )}
     </aside>
   );

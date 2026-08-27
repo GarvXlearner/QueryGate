@@ -4,19 +4,34 @@ import { Play, Sparkles, X } from 'lucide-react';
 import Editor from '@monaco-editor/react';
 import { MySQL } from 'dt-sql-parser';
 import debounce from 'lodash.debounce';
+import * as Y from 'yjs';
+import { WebrtcProvider } from 'y-webrtc';
+import { MonacoBinding } from 'y-monaco';
 import './QueryEditor.css';
+
+function getUsernameFromToken(token) {
+  if (!token) return 'Anonymous';
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.sub || 'Anonymous';
+  } catch(e) {
+    return 'Anonymous';
+  }
+}
 
 export default function QueryEditor({ activeDb, onResult, theme, insertTextTrigger }) {
   const { token } = useAuth();
-  const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const editorRef = useRef(null);
   const monacoRef = useRef(null);
+  const bindingRef = useRef(null);
+  const providerRef = useRef(null);
+  const ydocRef = useRef(null);
   
   // Persist latest props for Monaco command closures
-  const latestProps = useRef({ activeDb, token, onResult, query });
+  const latestProps = useRef({ activeDb, token, onResult });
   useEffect(() => {
-    latestProps.current = { activeDb, token, onResult, query };
+    latestProps.current = { activeDb, token, onResult };
   });
   
   const parserRef = useRef(null);
@@ -50,31 +65,22 @@ export default function QueryEditor({ activeDb, onResult, theme, insertTextTrigg
 
   useEffect(() => {
     if (insertTextTrigger && insertTextTrigger.text) {
-      setQuery(insertTextTrigger.text);
-      if (editorRef.current && monacoRef.current) {
-        validateSql(insertTextTrigger.text, editorRef.current, monacoRef.current, parserRef.current);
+      if (editorRef.current) {
+        editorRef.current.setValue(insertTextTrigger.text);
       }
     }
   }, [insertTextTrigger]);
 
-  const handleQueryChange = (val) => {
-    const newText = val || '';
-    setQuery(newText);
-    if (editorRef.current && monacoRef.current) {
-      validateSql(newText, editorRef.current, monacoRef.current, parserRef.current);
-    }
-  };
-
   const executeCore = async (mode) => {
     const props = latestProps.current;
-    let textToExecute = editorRef.current ? editorRef.current.getValue() : props.query;
+    if (!editorRef.current) return;
     
-    if (editorRef.current) {
-      const selection = editorRef.current.getSelection();
-      const model = editorRef.current.getModel();
-      if (selection && !selection.isEmpty()) {
-        textToExecute = model.getValueInRange(selection);
-      }
+    let textToExecute = editorRef.current.getValue();
+    const selection = editorRef.current.getSelection();
+    const model = editorRef.current.getModel();
+    
+    if (selection && !selection.isEmpty()) {
+      textToExecute = model.getValueInRange(selection);
     }
 
     if (!textToExecute.trim()) return;
@@ -118,24 +124,64 @@ export default function QueryEditor({ activeDb, onResult, theme, insertTextTrigg
   const handleEditorDidMount = (editor, monaco) => {
     editorRef.current = editor;
     monacoRef.current = monaco;
-    validateSql(query, editor, monaco, parserRef.current);
+    
+    // --- YJS & WEBRTC SETUP ---
+    const ydoc = new Y.Doc();
+    ydocRef.current = ydoc;
+
+    const dbId = activeDb.id || activeDb.Id;
+    // Shared room name based on dbId so everyone connected to this DB shares the code
+    const roomName = `querygate-workspace-${dbId}`;
+    
+    const provider = new WebrtcProvider(roomName, ydoc, {
+      signaling: ['wss://signaling.yjs.dev']
+    });
+    providerRef.current = provider;
+
+    const ytext = ydoc.getText('monaco');
+    const binding = new MonacoBinding(ytext, editor.getModel(), new Set([editor]), provider.awareness);
+    bindingRef.current = binding;
+
+    // Set awareness (Cursor name & color)
+    const username = getUsernameFromToken(token);
+    const colors = ['#f39c12', '#e74c3c', '#9b59b6', '#3498db', '#1abc9c', '#2ecc71', '#e67e22', '#16a085'];
+    const userColor = colors[Math.floor(Math.random() * colors.length)];
+    
+    provider.awareness.setLocalStateField('user', {
+      name: username,
+      color: userColor
+    });
+    // ---------------------------
+
+    editor.onDidChangeModelContent(() => {
+      validateSql(editor.getValue(), editor, monaco, parserRef.current);
+    });
+
+    // Initial validation
+    validateSql(editor.getValue(), editor, monaco, parserRef.current);
 
     // Bind SSMS Shortcuts
-    // F5 -> Execute
     editor.addCommand(monaco.KeyCode.F5, () => {
       handleExecute();
     });
 
-    // Ctrl + L -> Execution Plan
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyL, () => {
       handleExplain();
     });
 
-    // F6 -> AI Execute (Custom)
     editor.addCommand(monaco.KeyCode.F6, () => {
       handleAiExecute();
     });
   };
+
+  useEffect(() => {
+    // Cleanup on unmount
+    return () => {
+      if (bindingRef.current) bindingRef.current.destroy();
+      if (providerRef.current) providerRef.current.destroy();
+      if (ydocRef.current) ydocRef.current.destroy();
+    };
+  }, []);
 
   return (
     <div className="query-editor-container" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -177,8 +223,6 @@ export default function QueryEditor({ activeDb, onResult, theme, insertTextTrigg
             height="100%"
             defaultLanguage="mysql"
             theme={theme === 'dark' ? 'vs-dark' : 'vs-light'}
-            value={query}
-            onChange={handleQueryChange}
             onMount={handleEditorDidMount}
             options={{
               minimap: { enabled: false },

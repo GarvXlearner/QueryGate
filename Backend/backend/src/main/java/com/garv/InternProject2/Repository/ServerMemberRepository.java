@@ -9,4 +9,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ServerMemberRepository extends JpaRepository<ServerMember, Long> {
     boolean existsByServerAndUser(Server server, User user);
+    java.util.List<ServerMember> findByServer(Server server);
 }

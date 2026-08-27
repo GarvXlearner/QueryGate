@@ -4,7 +4,8 @@ import Sidebar from '../components/Sidebar';
 import QueryEditor from '../components/QueryEditor';
 import ResultsPanel from '../components/ResultsPanel';
 import ERDiagram from '../components/ERDiagram';
-import { LogOut, Database, Moon, Sun, Play, Square, FolderOpen, Save, X } from 'lucide-react';
+import TeamPanel from '../components/TeamPanel';
+import { LogOut, Database, Moon, Sun, Play, Square, FolderOpen, Save, X, Users } from 'lucide-react';
 import './Dashboard.css';
 
 export default function Dashboard() {
@@ -12,6 +13,7 @@ export default function Dashboard() {
   const [activeDb, setActiveDb] = useState(null);
   const [theme, setTheme] = useState('light');
   const [insertTextTrigger, setInsertTextTrigger] = useState(null);
+  const [showTeamPanel, setShowTeamPanel] = useState(false);
   
   // Tab Management
   const [tabs, setTabs] = useState([]);
@@ -64,7 +66,7 @@ export default function Dashboard() {
     const newTab = {
       id: newId,
       type: 'erd',
-      title: `${db.dbName} - ER Diagram`,
+      title: `${db.dbName || db.name} - ER Diagram`,
       db: db
     };
     setTabs(prev => [...prev, newTab]);
@@ -130,11 +132,18 @@ export default function Dashboard() {
           <Save size={16} className="toolbar-icon" />
         </button>
         <div className="toolbar-separator" />
+        <button className="toolbar-btn" title="Team Settings" onClick={() => setShowTeamPanel(true)}>
+          <Users size={16} className="toolbar-icon" />
+          <span style={{marginLeft: '4px', fontSize: '12px'}}>Team Settings</span>
+        </button>
+        <div className="toolbar-separator" />
         <div className="toolbar-db-select">
           <Database size={14} />
-          <span>{activeDb ? activeDb.dbName : 'master'}</span>
+          <span>{activeDb ? (activeDb.dbName || activeDb.name) : 'master'}</span>
         </div>
       </div>
+
+      {showTeamPanel && <TeamPanel onClose={() => setShowTeamPanel(false)} />}
 
       <div className="dashboard-body">
         {/* Left Sidebar (Object Explorer) */}
