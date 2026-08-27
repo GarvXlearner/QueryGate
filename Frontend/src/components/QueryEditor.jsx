@@ -5,7 +5,7 @@ import Editor from '@monaco-editor/react';
 import { MySQL } from 'dt-sql-parser';
 import debounce from 'lodash.debounce';
 import * as Y from 'yjs';
-import { WebrtcProvider } from 'y-webrtc';
+import { WebsocketProvider } from 'y-websocket';
 import { MonacoBinding } from 'y-monaco';
 import './QueryEditor.css';
 
@@ -133,9 +133,8 @@ export default function QueryEditor({ activeDb, onResult, theme, insertTextTrigg
     // Shared room name based on dbId so everyone connected to this DB shares the code
     const roomName = `querygate-workspace-${dbId}`;
     
-    const provider = new WebrtcProvider(roomName, ydoc, {
-      signaling: ['wss://signaling.yjs.dev']
-    });
+    // We switched to y-websocket because WebRTC is blocked by Incognito/Firewalls
+    const provider = new WebsocketProvider('wss://demos.yjs.dev/ws', roomName, ydoc);
     providerRef.current = provider;
 
     const ytext = ydoc.getText('monaco');

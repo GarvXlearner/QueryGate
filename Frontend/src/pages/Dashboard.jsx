@@ -162,12 +162,18 @@ export default function Dashboard() {
                 {tabs.map(t => (
                   <div 
                     key={t.id} 
-                    className={`editor-tab ${t.id === activeTabId ? 'active' : ''}`} 
+                    className={`editor-tab ${activeTabId === t.id ? 'active' : ''}`}
                     onClick={() => setActiveTabId(t.id)}
                   >
-                    {t.title} - localhost ({t.db?.dbName})
-                    <button className="tab-close" onClick={(e) => { e.stopPropagation(); closeTab(t.id); }}>
-                      <X size={12} />
+                    <span className="tab-title">{t.title} - localhost ({t.db?.name || t.db?.dbName || ''})</span>
+                    <button 
+                      className="close-tab-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        closeTab(t.id);
+                      }}
+                    >
+                      <X size={14} />
                     </button>
                   </div>
                 ))}
