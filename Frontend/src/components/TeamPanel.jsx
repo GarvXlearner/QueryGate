@@ -93,9 +93,28 @@ export default function TeamPanel({ onClose }) {
         </div>
         
         <div className="team-body">
-          <p style={{color: 'var(--text-secondary)', marginBottom: '20px', fontSize: '14px'}}>
+          <p style={{color: 'var(--text-secondary)', marginBottom: '16px', fontSize: '14px'}}>
             Manage who has access to your workspace databases. (Only available to Workspace Owners).
           </p>
+
+          <div style={{ marginBottom: '24px', padding: '12px', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '6px', border: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Workspace Invite Code</div>
+              <div style={{ fontSize: '18px', fontWeight: 'bold', letterSpacing: '2px', color: 'var(--accent-primary)' }}>
+                {localStorage.getItem('activeJoinCode') || 'N/A'}
+              </div>
+            </div>
+            <button 
+              className="login-btn" 
+              style={{ width: 'auto', padding: '6px 12px', fontSize: '12px', minHeight: 'auto' }}
+              onClick={() => {
+                navigator.clipboard.writeText(localStorage.getItem('activeJoinCode'));
+                alert('Invite code copied to clipboard!');
+              }}
+            >
+              Copy Code
+            </button>
+          </div>
           
           <div className="members-list">
             {members.map(member => (

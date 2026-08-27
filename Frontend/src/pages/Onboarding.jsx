@@ -11,6 +11,7 @@ export default function Onboarding() {
 
   // Form State
   const [serverName, setServerName] = useState('');
+  const [joinCode, setJoinCode] = useState('');
   const [serverId, setServerId] = useState(null);
   
   const [workspaces, setWorkspaces] = useState([]);
@@ -67,6 +68,7 @@ export default function Onboarding() {
         setServerId(data.serverId);
         localStorage.setItem('activeServerId', data.serverId);
         localStorage.setItem('activeServerName', data.serverName);
+        localStorage.setItem('activeJoinCode', data.joinCode);
         setStep('connectDb');
       } else {
         setError(data.error || 'Failed to create workspace');
@@ -100,6 +102,32 @@ export default function Onboarding() {
     setLoading(false);
   };
 
+  const handleJoinServer = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const res = await fetch(`${apiUrl}/api/workspace/join`, {
+        method: 'POST',
+        headers: getAuthHeader(),
+        body: JSON.stringify({ joinCode })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        localStorage.setItem('activeServerId', data.serverId);
+        localStorage.setItem('activeServerName', data.serverName);
+        localStorage.setItem('activeJoinCode', data.joinCode);
+        navigate('/');
+      } else {
+        setError(data.error || 'Failed to join workspace');
+      }
+    } catch (err) {
+      setError('Network error');
+    }
+    setLoading(false);
+  };
+
   return (
     <div className="onboarding-container">
       <div className="onboarding-header">
@@ -117,7 +145,7 @@ export default function Onboarding() {
               <h2 style={{ marginBottom: '16px', fontSize: '1.2rem', color: 'var(--text-secondary)' }}>Your Existing Workspaces</h2>
               <div className="workspace-list" style={{ display: 'grid', gap: '12px' }}>
                 {workspaces.map(ws => (
-                  <div key={ws.id} className="workspace-item" onClick={() => { localStorage.setItem('activeServerId', ws.id); localStorage.setItem('activeServerName', ws.name); navigate('/'); }} style={{ padding: '16px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', cursor: 'pointer', border: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div key={ws.id} className="workspace-item" onClick={() => { localStorage.setItem('activeServerId', ws.id); localStorage.setItem('activeServerName', ws.name); localStorage.setItem('activeJoinCode', ws.joinCode); navigate('/'); }} style={{ padding: '16px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', cursor: 'pointer', border: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <Server size={24} color="var(--accent-primary)" />
                       <span style={{ fontWeight: '500', fontSize: '1.1rem' }}>{ws.name}</span>
@@ -141,14 +169,14 @@ export default function Onboarding() {
             </div>
           </div>
 
-          <div className="onboarding-card glass-panel disabled">
+          <div className="onboarding-card glass-panel" onClick={() => setStep('joinServer')}>
             <div className="card-icon-wrapper purple">
               <Users size={32} />
             </div>
             <h2>Join Server</h2>
             <p>Enter an invite code to join an existing server workspace.</p>
             <div className="card-action">
-              Coming Soon...
+              Join Workspace <ArrowRight size={16} />
             </div>
           </div>
           </div>
@@ -175,6 +203,32 @@ export default function Onboarding() {
               <button type="button" onClick={() => setStep('select')} style={{ flex: 1, padding: '10px', background: 'transparent', border: '1px solid var(--border-color)', color: 'white', borderRadius: '4px', cursor: 'pointer' }}>Back</button>
               <button type="submit" disabled={loading} style={{ flex: 1, padding: '10px', background: 'var(--accent-primary)', border: 'none', color: 'white', borderRadius: '4px', cursor: 'pointer' }}>
                 {loading ? <Loader size={16} className="spin" /> : 'Create'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {step === 'joinServer' && (
+        <div className="onboarding-form glass-panel" style={{ padding: '32px', maxWidth: '400px', margin: '0 auto', textAlign: 'left' }}>
+          <h2>Join Workspace</h2>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>Enter the invite code from your team admin.</p>
+          <form onSubmit={handleJoinServer}>
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>Invite Code</label>
+              <input 
+                type="text" 
+                required 
+                value={joinCode}
+                onChange={e => setJoinCode(e.target.value.toUpperCase())}
+                placeholder="e.g. 8A7B6C" 
+                style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid var(--border-color)', background: 'var(--bg-default)', color: 'white', textTransform: 'uppercase' }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+              <button type="button" onClick={() => setStep('select')} style={{ flex: 1, padding: '10px', background: 'transparent', border: '1px solid var(--border-color)', color: 'white', borderRadius: '4px', cursor: 'pointer' }}>Back</button>
+              <button type="submit" disabled={loading} style={{ flex: 1, padding: '10px', background: 'var(--accent-primary)', border: 'none', color: 'white', borderRadius: '4px', cursor: 'pointer' }}>
+                {loading ? <Loader size={16} className="spin" /> : 'Join'}
               </button>
             </div>
           </form>

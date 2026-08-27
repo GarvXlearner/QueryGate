@@ -9,11 +9,13 @@ export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
+      setIsLoading(true);
       const res = await fetch('/api/auth/google-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -28,6 +30,8 @@ export default function Login() {
       }
     } catch (err) {
       setError('Failed to connect to the server for Google Login.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -43,6 +47,7 @@ export default function Login() {
     const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
     
     try {
+      setIsLoading(true);
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -53,6 +58,7 @@ export default function Login() {
       
       if (!res.ok || data.includes('already taken') || data.includes('not found') || data.includes('Invalid') || data.includes('lock')) {
         setError(data);
+        setIsLoading(false);
         return;
       }
 
@@ -62,9 +68,11 @@ export default function Login() {
       } else {
         setIsLogin(true);
         setError('Registered successfully. Please login.');
+        setIsLoading(false);
       }
     } catch (err) {
       setError('Failed to connect to the server.');
+      setIsLoading(false);
     }
   };
 
