@@ -16,9 +16,29 @@ export default function Dashboard() {
   const [showTeamPanel, setShowTeamPanel] = useState(false);
   
   // Tab Management
-  const [tabs, setTabs] = useState([]);
-  const [activeTabId, setActiveTabId] = useState(null);
-  const [tabCounter, setTabCounter] = useState(1);
+  const [tabs, setTabs] = useState(() => {
+    const saved = localStorage.getItem('querygate_tabs');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return [];
+  });
+  const [activeTabId, setActiveTabId] = useState(() => localStorage.getItem('querygate_activeTabId') || null);
+  const [tabCounter, setTabCounter] = useState(() => parseInt(localStorage.getItem('querygate_tabCounter')) || 1);
+
+  useEffect(() => {
+    const tabsToSave = tabs.map(t => ({ ...t, result: null }));
+    localStorage.setItem('querygate_tabs', JSON.stringify(tabsToSave));
+  }, [tabs]);
+
+  useEffect(() => {
+    if (activeTabId) localStorage.setItem('querygate_activeTabId', activeTabId);
+    else localStorage.removeItem('querygate_activeTabId');
+  }, [activeTabId]);
+
+  useEffect(() => {
+    localStorage.setItem('querygate_tabCounter', tabCounter.toString());
+  }, [tabCounter]);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -195,6 +215,7 @@ export default function Dashboard() {
                     ) : (
                       <>
                         <QueryEditor 
+                          tabId={t.id}
                           activeDb={t.db} 
                           onResult={(res) => updateTabResult(t.id, res)}
                           theme={theme}

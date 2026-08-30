@@ -7,7 +7,7 @@ import debounce from 'lodash.debounce';
 import './QueryEditor.css';
 
 
-export default function QueryEditor({ activeDb, onResult, theme, insertTextTrigger }) {
+export default function QueryEditor({ activeDb, onResult, theme, insertTextTrigger, tabId }) {
   const { token } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const editorRef = useRef(null);
@@ -172,7 +172,11 @@ export default function QueryEditor({ activeDb, onResult, theme, insertTextTrigg
             height="100%"
             defaultLanguage="mysql"
             theme={theme === 'dark' ? 'vs-dark' : 'vs-light'}
+            defaultValue={localStorage.getItem(`querygate_tab_${tabId}`) || ''}
             onMount={handleEditorDidMount}
+            onChange={(value) => {
+              localStorage.setItem(`querygate_tab_${tabId}`, value);
+            }}
             options={{
               minimap: { enabled: false },
               fontSize: 14,
