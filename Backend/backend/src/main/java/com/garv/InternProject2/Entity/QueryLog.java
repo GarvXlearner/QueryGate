@@ -19,7 +19,7 @@ public class QueryLog {
     private String dbname;
     @Column(name = "action_type")
     private String actiontype;
-    @Column(name = "query_text")
+    @Column(name = "query_text", columnDefinition = "TEXT")
     private String querytext;
 
     @Enumerated(EnumType.STRING)

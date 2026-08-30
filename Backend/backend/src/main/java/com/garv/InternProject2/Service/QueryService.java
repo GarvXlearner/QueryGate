@@ -31,8 +31,13 @@ public class QueryService {
         log.setUserid(userId);
         log.setDbid(dbId);
         log.setDbname(dbName);
+        
+        // Truncate query to 65000 characters to ensure it fits in TEXT column
+        if (query != null && query.length() > 65000) {
+            query = query.substring(0, 65000) + "... [TRUNCATED]";
+        }
         log.setQuerytext(query);
-        log.setActiontype(query.trim().split(" ")[0].toUpperCase()); // first word: SELECT/DELETE/etc.
+        log.setActiontype(query != null && !query.trim().isEmpty() ? query.trim().split(" ")[0].toUpperCase() : "UNKNOWN"); // first word: SELECT/DELETE/etc.
         log.setStatus(status);
         queryLogRepository.save(log);
     }
