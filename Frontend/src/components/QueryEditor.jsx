@@ -4,29 +4,14 @@ import { Play, Sparkles, X } from 'lucide-react';
 import Editor from '@monaco-editor/react';
 import { MySQL } from 'dt-sql-parser';
 import debounce from 'lodash.debounce';
-import * as Y from 'yjs';
-import { WebrtcProvider } from 'y-webrtc';
-import { MonacoBinding } from 'y-monaco';
 import './QueryEditor.css';
 
-function getUsernameFromToken(token) {
-  if (!token) return 'Anonymous';
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.sub || 'Anonymous';
-  } catch(e) {
-    return 'Anonymous';
-  }
-}
 
 export default function QueryEditor({ activeDb, onResult, theme, insertTextTrigger }) {
   const { token } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const editorRef = useRef(null);
   const monacoRef = useRef(null);
-  const bindingRef = useRef(null);
-  const providerRef = useRef(null);
-  const ydocRef = useRef(null);
   
   // Persist latest props for Monaco command closures
   const latestProps = useRef({ activeDb, token, onResult });
@@ -124,34 +109,6 @@ export default function QueryEditor({ activeDb, onResult, theme, insertTextTrigg
   const handleEditorDidMount = (editor, monaco) => {
     editorRef.current = editor;
     monacoRef.current = monaco;
-    
-    // --- YJS & WEBRTC SETUP ---
-    const ydoc = new Y.Doc();
-    ydocRef.current = ydoc;
-
-    const dbId = activeDb.id || activeDb.Id;
-    // Shared room name based on dbId so everyone connected to this DB shares the code
-    const roomName = `querygate-workspace-${dbId}`;
-    
-    const provider = new WebrtcProvider(roomName, ydoc, {
-      signaling: ['wss://signaling.yjs.dev']
-    });
-    providerRef.current = provider;
-
-    const ytext = ydoc.getText('monaco');
-    const binding = new MonacoBinding(ytext, editor.getModel(), new Set([editor]), provider.awareness);
-    bindingRef.current = binding;
-
-    // Set awareness (Cursor name & color)
-    const username = getUsernameFromToken(token);
-    const colors = ['#f39c12', '#e74c3c', '#9b59b6', '#3498db', '#1abc9c', '#2ecc71', '#e67e22', '#16a085'];
-    const userColor = colors[Math.floor(Math.random() * colors.length)];
-    
-    provider.awareness.setLocalStateField('user', {
-      name: username,
-      color: userColor
-    });
-    // ---------------------------
 
     editor.onDidChangeModelContent(() => {
       validateSql(editor.getValue(), editor, monaco, parserRef.current);
@@ -174,14 +131,6 @@ export default function QueryEditor({ activeDb, onResult, theme, insertTextTrigg
     });
   };
 
-  useEffect(() => {
-    // Cleanup on unmount
-    return () => {
-      if (bindingRef.current) bindingRef.current.destroy();
-      if (providerRef.current) providerRef.current.destroy();
-      if (ydocRef.current) ydocRef.current.destroy();
-    };
-  }, []);
 
   return (
     <div className="query-editor-container" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
