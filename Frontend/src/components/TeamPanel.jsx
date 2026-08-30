@@ -140,7 +140,7 @@ export default function TeamPanel({ onClose }) {
                         <select 
                           className="access-select"
                           onChange={(e) => handleGrantAccess(String(member.userId), db.id, e.target.value)}
-                          defaultValue={member.dbAccess ? (member.dbAccess[db.id] || "NONE") : ""}
+                          value={member.dbAccess ? (member.dbAccess[db.id] || "NONE") : ""}
                         >
                           <option value="" disabled>Select Access</option>
                           <option value="NONE">No Access</option>
