@@ -225,6 +225,37 @@ public class WorkspaceController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/recent-connections")
+    public ResponseEntity<?> getRecentConnections(HttpServletRequest httpRequest) {
+        String authUsername = (String) httpRequest.getAttribute("username");
+        User user = userRepository.findByUsername(authUsername).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
+        }
+
+        java.util.List<Server> servers = serverRepository.findByOwner(user);
+        java.util.List<Map<String, Object>> recentConnections = new java.util.ArrayList<>();
+        java.util.Set<String> seen = new java.util.HashSet<>();
+
+        for (Server server : servers) {
+            java.util.List<Database> databases = databaseRepository.findByServerWorkspace(server);
+            for (Database db : databases) {
+                String uniqueKey = db.getDbHost() + ":" + db.getPort() + "/" + db.getDbName() + "@" + db.getUsername();
+                if (!seen.contains(uniqueKey)) {
+                    seen.add(uniqueKey);
+                    Map<String, Object> map = new java.util.HashMap<>();
+                    map.put("dbName", db.getDbName());
+                    map.put("host", db.getDbHost());
+                    map.put("port", db.getPort());
+                    map.put("username", db.getUsername());
+                    map.put("password", db.getPassword()); // Needed to auto-fill
+                    recentConnections.add(map);
+                }
+            }
+        }
+        return ResponseEntity.ok(recentConnections);
+    }
+
     @PostMapping("/{serverId}/database/{dbId}/access")
     public ResponseEntity<?> grantAccess(@PathVariable Long serverId, @PathVariable Long dbId, @RequestBody Map<String, String> request, HttpServletRequest httpRequest) {
         String authUsername = (String) httpRequest.getAttribute("username");
