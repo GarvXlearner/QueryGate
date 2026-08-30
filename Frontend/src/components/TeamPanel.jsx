@@ -60,6 +60,7 @@ export default function TeamPanel({ onClose }) {
       });
       if (res.ok) {
         // Success
+        fetchMembers(); // refresh to show updated access
       } else {
         alert('Failed to update access.');
       }
@@ -138,8 +139,8 @@ export default function TeamPanel({ onClose }) {
                         <div className="db-name"><Database size={14} style={{display: 'inline', marginRight: '4px'}}/> {db.name}</div>
                         <select 
                           className="access-select"
-                          onChange={(e) => handleGrantAccess(member.userId, db.id, e.target.value)}
-                          defaultValue=""
+                          onChange={(e) => handleGrantAccess(String(member.userId), db.id, e.target.value)}
+                          defaultValue={member.dbAccess ? (member.dbAccess[db.id] || "NONE") : ""}
                         >
                           <option value="" disabled>Select Access</option>
                           <option value="NONE">No Access</option>

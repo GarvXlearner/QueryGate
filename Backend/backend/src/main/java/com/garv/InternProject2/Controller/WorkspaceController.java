@@ -180,6 +180,16 @@ public class WorkspaceController {
             map.put("username", m.getUser().getUsername());
             map.put("role", m.getRole().name());
             map.put("joinedAt", m.getJoinedAt() != null ? m.getJoinedAt().toString() : "");
+            
+            java.util.List<com.garv.InternProject2.Entity.UserDbAccess> accessList = userDbAccessRepository.findByUserId(m.getUser().getId());
+            Map<Long, String> dbAccessMap = new java.util.HashMap<>();
+            for (com.garv.InternProject2.Entity.UserDbAccess acc : accessList) {
+                if (acc.getDb().getServerWorkspace().getId().equals(serverId)) {
+                    dbAccessMap.put(acc.getDb().getId(), acc.getRight().name());
+                }
+            }
+            map.put("dbAccess", dbAccessMap);
+            
             return map;
         }).toList();
         return ResponseEntity.ok(response);

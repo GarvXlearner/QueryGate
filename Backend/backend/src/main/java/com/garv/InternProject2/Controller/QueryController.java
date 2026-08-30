@@ -35,6 +35,9 @@ public class QueryController {
     @Autowired
     private QueryLogRepository queryLogRepository;
 
+    @Autowired
+    private com.garv.InternProject2.Repository.UserDbAccessRepository userDbAccessRepository;
+
     @GetMapping("/history")
     public ResponseEntity<List<QueryLog>> getHistory(HttpServletRequest httprequest) {
         String username = (String)httprequest.getAttribute("username");
@@ -42,7 +45,15 @@ public class QueryController {
         if(user == null) {
             return ResponseEntity.status(401).build();
         }
-        return ResponseEntity.ok(queryLogRepository.findByUseridOrderByCreatedAtDesc(user.getId()));
+        
+        List<com.garv.InternProject2.Entity.UserDbAccess> accessList = userDbAccessRepository.findByUserId(user.getId());
+        List<Long> dbIds = accessList.stream().map(a -> a.getDb().getId()).toList();
+        
+        if (dbIds.isEmpty()) {
+            return ResponseEntity.ok(List.of());
+        }
+        
+        return ResponseEntity.ok(queryLogRepository.findByDbidInOrderByCreatedAtDesc(dbIds));
     }
 
     @PostMapping("/execute")

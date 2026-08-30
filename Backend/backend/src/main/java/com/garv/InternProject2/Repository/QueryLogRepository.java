@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface QueryLogRepository extends JpaRepository<QueryLog, Long> {
     List<QueryLog> findByUseridOrderByCreatedAtDesc(Long userid);
+    List<QueryLog> findByDbidInOrderByCreatedAtDesc(List<Long> dbids);
 }
