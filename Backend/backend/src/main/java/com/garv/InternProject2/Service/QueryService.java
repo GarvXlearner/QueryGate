@@ -32,9 +32,9 @@ public class QueryService {
         log.setDbid(dbId);
         log.setDbname(dbName);
         
-        // AWS RDS blocked the TEXT column resize, so we truncate to 250 characters to prevent crashes
-        if (query != null && query.length() > 250) {
-            query = query.substring(0, 250) + "... [TRUNCATED]";
+        // AWS RDS blocked the TEXT column resize, so we truncate to exactly 255 characters total
+        if (query != null && query.length() > 255) {
+            query = query.substring(0, 240) + "... [TRUNCATED]";
         }
         log.setQuerytext(query);
         log.setActiontype(query != null && !query.trim().isEmpty() ? query.trim().split(" ")[0].toUpperCase() : "UNKNOWN"); // first word: SELECT/DELETE/etc.
