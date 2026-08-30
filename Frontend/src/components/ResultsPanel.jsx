@@ -18,11 +18,16 @@ export default function ResultsPanel({ result }) {
       rawText = parts[1].trim();
     }
 
-    if (result.type === 'error' || rawText.includes('denied') || rawText.includes('failed') || rawText.includes('not found')) {
+    const isErrorText = 
+      rawText.startsWith('Access denied') || 
+      rawText.startsWith('Query execution failed') || 
+      rawText.startsWith('Database not found');
+
+    if (result.type === 'error' || isErrorText) {
       return { type: 'message', isError: true, content: rawText, aiHeader, timeMs: result.timeMs };
     }
 
-    if (rawText.includes('successfully')) {
+    if (rawText.startsWith('Query executed successfully') || rawText.startsWith('Stored procedure created')) {
       return { type: 'message', isError: false, content: rawText, aiHeader, timeMs: result.timeMs };
     }
 
