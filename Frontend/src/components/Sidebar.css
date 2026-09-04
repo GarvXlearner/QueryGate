@@ -116,3 +116,20 @@
   border-left: 1px solid rgba(255, 255, 255, 0.05);
   margin-left: 16px;
 }
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    min-width: 100%;
+    height: auto;
+    max-height: 40vh;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+  }
+  
+  .sidebar-toolbar {
+    flex-wrap: wrap;
+  }
+}

@@ -177,3 +177,41 @@
   width: 100%;
   background-color: var(--bg-base);
 }
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .dashboard-layout {
+    height: 100dvh;
+  }
+  
+  .ssms-menubar {
+    padding: 0 8px;
+  }
+  
+  .menu-right span {
+    display: none; /* Hide 'Disconnect' text on small screens */
+  }
+  
+  .ssms-toolbar {
+    padding: 8px;
+    height: auto;
+    flex-wrap: wrap;
+  }
+  
+  .toolbar-db-select {
+    width: 100%;
+    min-width: 100%;
+    margin-top: 4px;
+  }
+  
+  .dashboard-body {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  
+  .workspace {
+    border-left: none;
+    border-top: 1px solid var(--border-color);
+    min-height: 50vh;
+  }
+}
