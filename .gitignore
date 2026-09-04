@@ -1,0 +1,10 @@
+# IDE files
+.idea/
+*.iml
+.vscode/
+
+# Node
+node_modules/
+
+# Maven
+target/
