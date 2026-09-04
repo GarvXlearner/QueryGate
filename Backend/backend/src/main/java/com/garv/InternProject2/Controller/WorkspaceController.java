@@ -142,9 +142,15 @@ public class WorkspaceController {
             return ResponseEntity.status(401).body(Map.of("error", "Unauthorized"));
         }
 
-        java.util.List<Server> servers = serverRepository.findByOwner(user);
+        java.util.List<Server> ownedServers = serverRepository.findByOwner(user);
+        java.util.List<com.garv.InternProject2.Entity.ServerMember> memberships = serverMemberRepository.findByUser(user);
         
-        java.util.List<Map<String, Object>> response = servers.stream().map(server -> {
+        java.util.Set<Server> allServers = new java.util.HashSet<>(ownedServers);
+        for (com.garv.InternProject2.Entity.ServerMember member : memberships) {
+            allServers.add(member.getServer());
+        }
+        
+        java.util.List<Map<String, Object>> response = allServers.stream().map(server -> {
             Map<String, Object> map = new java.util.HashMap<>();
             map.put("id", server.getId());
             map.put("name", server.getName());
