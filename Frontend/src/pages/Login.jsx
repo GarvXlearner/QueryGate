@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
+import { Helmet } from 'react-helmet-async';
 import './Login.css';
 
 export default function Login() {
@@ -12,6 +13,12 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  return (
+    <>
+      <Helmet>
+        <title>{isLogin ? 'Sign In' : 'Sign Up'} | QueryGate</title>
+      </Helmet>
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {

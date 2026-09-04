@@ -1,10 +1,15 @@
 import { Link } from 'react-router-dom';
 import { Database, Users, Shield, Zap, ChevronRight, Code, Activity, Server } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 import './Landing.css';
 
 export default function Landing() {
   return (
     <div className="landing-container">
+      <Helmet>
+        <title>QueryGate - Fast & Collaborative SQL Editor</title>
+        <meta name="description" content="Experience a desktop-grade SSMS environment directly in your browser. Collaborate with your team, manage role-based access, and execute queries in real-time." />
+      </Helmet>
       {/* Navigation */}
       <nav className="landing-nav">
         <div className="nav-logo">

@@ -6,6 +6,7 @@ import ResultsPanel from '../components/ResultsPanel';
 import ERDiagram from '../components/ERDiagram';
 import TeamPanel from '../components/TeamPanel';
 import { LogOut, Database, Moon, Sun, Play, Square, FolderOpen, Save, X, Users } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 import './Dashboard.css';
 
 export default function Dashboard() {
@@ -119,24 +120,28 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="dashboard-layout">
-      {/* SSMS Menu Bar */}
-      <div className="ssms-menubar">
-        <div className="menu-items">
-          <div className="menu-item" onClick={handleNewQuery}>New Query</div>
-          <div className="menu-item" onClick={() => setShowTeamPanel(true)}>Team</div>
-          <div className="menu-item" onClick={() => window.open('https://github.com/GarvXlearner/QueryGate', '_blank')}>Help</div>
+    <>
+      <Helmet>
+        <title>{activeDb ? `${activeDb.dbName || activeDb.name} | Workspace` : 'Workspace | QueryGate'}</title>
+      </Helmet>
+      <div className="dashboard-layout">
+        {/* SSMS Menu Bar */}
+        <div className="ssms-menubar">
+          <div className="menu-items">
+            <div className="menu-item" onClick={handleNewQuery}>New Query</div>
+            <div className="menu-item" onClick={() => setShowTeamPanel(true)}>Team</div>
+            <div className="menu-item" onClick={() => window.open('https://github.com/GarvXlearner/QueryGate', '_blank')}>Help</div>
+          </div>
+          <div className="menu-right">
+            <button onClick={toggleTheme} className="theme-toggle" title="Toggle Theme">
+              {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
+            </button>
+            <button onClick={logout} className="logout-btn" title="Logout">
+              <LogOut size={14} />
+              <span>Disconnect</span>
+            </button>
+          </div>
         </div>
-        <div className="menu-right">
-          <button onClick={toggleTheme} className="theme-toggle" title="Toggle Theme">
-            {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
-          </button>
-          <button onClick={logout} className="logout-btn" title="Logout">
-            <LogOut size={14} />
-            <span>Disconnect</span>
-          </button>
-        </div>
-      </div>
 
       {/* SSMS Tool Bar */}
       <div className="ssms-toolbar">
@@ -230,6 +235,6 @@ export default function Dashboard() {
           )}
         </main>
       </div>
-    </div>
+    </>
   );
 }

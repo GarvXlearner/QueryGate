@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Server, Users, ArrowRight, Database, CheckCircle, Loader } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 import './Onboarding.css';
 
 export default function Onboarding() {
@@ -129,8 +130,12 @@ export default function Onboarding() {
   };
 
   return (
-    <div className="onboarding-container">
-      <div className="onboarding-content">
+    <>
+      <Helmet>
+        <title>Get Started | QueryGate</title>
+      </Helmet>
+      <div className="onboarding-container">
+        <div className="onboarding-content">
         <div className="onboarding-header">
           <h1>Welcome to QueryGate</h1>
           <p>Choose how you want to get started</p>
@@ -309,6 +314,6 @@ export default function Onboarding() {
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 }
