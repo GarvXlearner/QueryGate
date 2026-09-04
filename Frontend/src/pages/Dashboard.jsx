@@ -123,13 +123,9 @@ export default function Dashboard() {
       {/* SSMS Menu Bar */}
       <div className="ssms-menubar">
         <div className="menu-items">
-          <div className="menu-item">File</div>
-          <div className="menu-item">Edit</div>
-          <div className="menu-item">View</div>
-          <div className="menu-item">Query</div>
-          <div className="menu-item">Tools</div>
-          <div className="menu-item">Window</div>
-          <div className="menu-item">Help</div>
+          <div className="menu-item" onClick={handleNewQuery}>New Query</div>
+          <div className="menu-item" onClick={() => setShowTeamPanel(true)}>Team</div>
+          <div className="menu-item" onClick={() => window.open('https://github.com/GarvXlearner/QueryGate', '_blank')}>Help</div>
         </div>
         <div className="menu-right">
           <button onClick={toggleTheme} className="theme-toggle" title="Toggle Theme">
@@ -144,17 +140,14 @@ export default function Dashboard() {
 
       {/* SSMS Tool Bar */}
       <div className="ssms-toolbar">
-        <button className="toolbar-btn" title="New Query" onClick={handleNewQuery} disabled={!activeDb}>
+        <button className="toolbar-btn" style={{ width: 'auto', padding: '0 8px' }} title="New Query" onClick={handleNewQuery} disabled={!activeDb}>
           <FolderOpen size={16} className="toolbar-icon" />
-          <span style={{marginLeft: '4px', fontSize: '12px'}}>New Query</span>
-        </button>
-        <button className="toolbar-btn" title="Save" disabled>
-          <Save size={16} className="toolbar-icon" />
+          <span style={{marginLeft: '6px', fontSize: '12px'}}>New Query</span>
         </button>
         <div className="toolbar-separator" />
-        <button className="toolbar-btn" title="Team Settings" onClick={() => setShowTeamPanel(true)}>
+        <button className="toolbar-btn" style={{ width: 'auto', padding: '0 8px' }} title="Team Settings" onClick={() => setShowTeamPanel(true)}>
           <Users size={16} className="toolbar-icon" />
-          <span style={{marginLeft: '4px', fontSize: '12px'}}>Team Settings</span>
+          <span style={{marginLeft: '6px', fontSize: '12px'}}>Team Settings</span>
         </button>
         <div className="toolbar-separator" />
         <div className="toolbar-db-select">
