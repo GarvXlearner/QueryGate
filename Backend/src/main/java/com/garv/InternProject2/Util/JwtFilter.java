@@ -20,7 +20,7 @@ public class JwtFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
 
         // Allow register/login without token and allow CORS preflight (OPTIONS)
-        if (path.equals("/api/auth/register") || path.equals("/api/auth/login") || request.getMethod().equalsIgnoreCase("OPTIONS")) {
+        if (path.equals("/api/auth/register") || path.equals("/api/auth/login") || path.equals("/api/auth/google-login") || request.getMethod().equalsIgnoreCase("OPTIONS")) {
             filterChain.doFilter(request, response);
             return;
         }
