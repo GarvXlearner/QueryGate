@@ -125,11 +125,15 @@ public class QueryController {
         User user= userRepository.findByUsername(username).orElse(null);
         if(user==null) return ResponseEntity.status(401).body("username not found");
 
-        List<String> tables= schemaService.getTables(user.getId(), nlrequest.getDbId());
-        StringBuilder schemaContext= new StringBuilder();
+        if (!schemaService.hasAccess(user.getId(), nlrequest.getDbId())) {
+            return ResponseEntity.status(403).body("Access denied. You do not have access to this database.");
+        }
+
+        List<String> tables = schemaService.getTables(nlrequest.getDbId());
+        StringBuilder schemaContext = new StringBuilder();
 
         for(String table:tables){
-            List<String> columns = schemaService.getColumns(user.getId(), nlrequest.getDbId(), table);
+            List<String> columns = schemaService.getColumns(nlrequest.getDbId(), table);
             schemaContext.append("Table: ").append(table).append(" (");
             schemaContext.append(String.join(", ", columns));
             schemaContext.append(")\n");

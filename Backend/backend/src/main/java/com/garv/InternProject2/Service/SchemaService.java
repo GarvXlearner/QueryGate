@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.cache.annotation.Cacheable;
 
 @Service
 public class SchemaService {
@@ -17,18 +18,15 @@ public class SchemaService {
     private UserDbAccessRepository userDbAccessRepository;
     @Autowired
     private DatabaseRepo databaseRepo;
-    private boolean hasAccess(Long userId, Long dbId) {
+
+    public boolean hasAccess(Long userId, Long dbId) {
         List<UserDbAccess> accessList = userDbAccessRepository.findByUserId(userId);
         return accessList.stream()
                 .anyMatch(a -> a.getDb().getId().equals(dbId));
     }
 
-    public List<String> getTables(Long userId, Long dbId){
-        if (!hasAccess(userId, dbId)) {
-            List<String> error = new ArrayList<>();
-            error.add("Access denied. You do not have access to this database.");
-            return error;
-        }
+    @Cacheable(value = "schemaCache", key = "'tables-' + #dbId")
+    public List<String> getTables(Long dbId){
         Database db = databaseRepo.findById(dbId).orElse(null);
         if (db == null) {
             List<String> error = new ArrayList<>();
@@ -59,12 +57,8 @@ public class SchemaService {
         return tables;
     }
 
-    public List<String> getColumns(Long userId, Long dbId, String tableName) {
-        if (!hasAccess(userId, dbId)) {
-            List<String> error = new ArrayList<>();
-            error.add("Access denied. You do not have access to this database.");
-            return error;
-        }
+    @Cacheable(value = "schemaCache", key = "'columns-' + #dbId + '-' + #tableName")
+    public List<String> getColumns(Long dbId, String tableName) {
 
         Database db = databaseRepo.findById(dbId).orElse(null);
         if (db == null) {
@@ -99,12 +93,8 @@ public class SchemaService {
 
 
     }
-    public List<String> getViews(Long userId, Long dbId) {
-        if (!hasAccess(userId, dbId)) {
-            List<String> error = new ArrayList<>();
-            error.add("Access denied. You do not have access to this database.");
-            return error;
-        }
+    @Cacheable(value = "schemaCache", key = "'views-' + #dbId")
+    public List<String> getViews(Long dbId) {
 
         Database db = databaseRepo.findById(dbId).orElse(null);
         if (db == null) {
@@ -137,12 +127,8 @@ public class SchemaService {
         return views;
     }
 
-    public List<String> getProcedures(Long userId, Long dbId) {
-        if (!hasAccess(userId, dbId)) {
-            List<String> error = new ArrayList<>();
-            error.add("Access denied. You do not have access to this database.");
-            return error;
-        }
+    @Cacheable(value = "schemaCache", key = "'procedures-' + #dbId")
+    public List<String> getProcedures(Long dbId) {
 
         Database db = databaseRepo.findById(dbId).orElse(null);
         if (db == null) {
@@ -175,10 +161,8 @@ public class SchemaService {
         return procedures;
     }
 
-    public String getProcedureDefinition(Long userId, Long dbId, String procName) {
-        if (!hasAccess(userId, dbId)) {
-            return "Access denied.";
-        }
+    @Cacheable(value = "schemaCache", key = "'procedureDef-' + #dbId + '-' + #procName")
+    public String getProcedureDefinition(Long dbId, String procName) {
 
         Database db = databaseRepo.findById(dbId).orElse(null);
         if (db == null) {
@@ -209,10 +193,8 @@ public class SchemaService {
         return definition;
     }
 
-    public java.util.Map<String, Object> getErdData(Long userId, Long dbId) {
-        if (!hasAccess(userId, dbId)) {
-            return java.util.Collections.singletonMap("error", "Access denied.");
-        }
+    @Cacheable(value = "schemaCache", key = "'erd-' + #dbId")
+    public java.util.Map<String, Object> getErdData(Long dbId) {
 
         Database db = databaseRepo.findById(dbId).orElse(null);
         if (db == null) {

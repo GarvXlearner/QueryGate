@@ -29,7 +29,11 @@ public class SchemaController {
             return ResponseEntity.status(401).body(List.of("User not found from token."));
         }
 
-        return ResponseEntity.ok(schemaService.getTables(user.getId(), dbId));
+        if (!schemaService.hasAccess(user.getId(), dbId)) {
+            return ResponseEntity.status(403).body(List.of("Access denied. You do not have access to this database."));
+        }
+
+        return ResponseEntity.ok(schemaService.getTables(dbId));
     }
 
     @GetMapping("/{dbId}/tables/{tableName}/columns")
@@ -42,7 +46,11 @@ public class SchemaController {
             return ResponseEntity.status(401).body(List.of("User not found from token."));
         }
 
-        return ResponseEntity.ok(schemaService.getColumns(user.getId(), dbId, tableName));
+        if (!schemaService.hasAccess(user.getId(), dbId)) {
+            return ResponseEntity.status(403).body(List.of("Access denied. You do not have access to this database."));
+        }
+
+        return ResponseEntity.ok(schemaService.getColumns(dbId, tableName));
     }
     @GetMapping("/{dbId}/views")
     public ResponseEntity<List<String>> getViews(@PathVariable Long dbId, HttpServletRequest httpRequest) {
@@ -53,7 +61,11 @@ public class SchemaController {
             return ResponseEntity.status(401).body(List.of("User not found from token."));
         }
 
-        return ResponseEntity.ok(schemaService.getViews(user.getId(), dbId));
+        if (!schemaService.hasAccess(user.getId(), dbId)) {
+            return ResponseEntity.status(403).body(List.of("Access denied. You do not have access to this database."));
+        }
+
+        return ResponseEntity.ok(schemaService.getViews(dbId));
     }
 
     @GetMapping("/{dbId}/procedures")
@@ -65,7 +77,11 @@ public class SchemaController {
             return ResponseEntity.status(401).body(List.of("User not found from token."));
         }
 
-        return ResponseEntity.ok(schemaService.getProcedures(user.getId(), dbId));
+        if (!schemaService.hasAccess(user.getId(), dbId)) {
+            return ResponseEntity.status(403).body(List.of("Access denied. You do not have access to this database."));
+        }
+
+        return ResponseEntity.ok(schemaService.getProcedures(dbId));
     }
 
     @GetMapping("/{dbId}/procedures/{procName}")
@@ -77,7 +93,11 @@ public class SchemaController {
             return ResponseEntity.status(401).body("User not found from token.");
         }
 
-        return ResponseEntity.ok(schemaService.getProcedureDefinition(user.getId(), dbId, procName));
+        if (!schemaService.hasAccess(user.getId(), dbId)) {
+            return ResponseEntity.status(403).body("Access denied. You do not have access to this database.");
+        }
+
+        return ResponseEntity.ok(schemaService.getProcedureDefinition(dbId, procName));
     }
 
     @GetMapping("/{dbId}/erd")
@@ -89,6 +109,10 @@ public class SchemaController {
             return ResponseEntity.status(401).body(java.util.Collections.singletonMap("error", "User not found from token."));
         }
 
-        return ResponseEntity.ok(schemaService.getErdData(user.getId(), dbId));
+        if (!schemaService.hasAccess(user.getId(), dbId)) {
+            return ResponseEntity.status(403).body(java.util.Collections.singletonMap("error", "Access denied. You do not have access to this database."));
+        }
+
+        return ResponseEntity.ok(schemaService.getErdData(dbId));
     }
 }

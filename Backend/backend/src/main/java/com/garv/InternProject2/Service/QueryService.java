@@ -26,6 +26,16 @@ public class QueryService {
     @Autowired
     private QueryLogRepository queryLogRepository;
 
+    @Autowired
+    private org.springframework.cache.CacheManager cacheManager;
+
+    private void evictSchemaCache() {
+        org.springframework.cache.Cache cache = cacheManager.getCache("schemaCache");
+        if (cache != null) {
+            cache.clear();
+        }
+    }
+
     private void saveLog(Long userId, Long dbId, String dbName, String query, QueryLog.Status status) {
         QueryLog log = new QueryLog();
         log.setUserid(userId);
@@ -120,6 +130,11 @@ public class QueryService {
             } else {
                 int affected = stmt.executeUpdate(query);
                 saveLog(userId, request.getDbId(), dbName, query, QueryLog.Status.SUCCESS);
+                
+                if (queryUpper.startsWith("CREATE") || queryUpper.startsWith("ALTER") || queryUpper.startsWith("DROP")) {
+                    evictSchemaCache();
+                }
+                
                 return "Query executed successfully. Rows affected: " + affected;
             }
 
@@ -151,6 +166,7 @@ public class QueryService {
         try (Connection conn = DriverManager.getConnection(url, "root", db.getPassword())) {
             Statement stmt = conn.createStatement();
             stmt.execute(request.getQuery());
+            evictSchemaCache();
             return "Stored procedure created successfully.";
         } catch (SQLException e) {
             return "Failed to create procedure: " + e.getMessage();
