@@ -14,11 +14,6 @@ export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  return (
-    <>
-      <Helmet>
-        <title>{isLogin ? 'Sign In' : 'Sign Up'} | QueryGate</title>
-      </Helmet>
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
@@ -84,8 +79,12 @@ export default function Login() {
   };
 
   return (
-    <div className="login-container">
-      <div className="login-box glass-panel">
+    <>
+      <Helmet>
+        <title>{isLogin ? 'Sign In' : 'Sign Up'} | QueryGate</title>
+      </Helmet>
+      <div className="login-container">
+        <div className="login-box glass-panel">
         <div className="login-header">
           <h1>QueryGate</h1>
           <p>Database Management Studio</p>
@@ -142,6 +141,7 @@ export default function Login() {
           </button>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
