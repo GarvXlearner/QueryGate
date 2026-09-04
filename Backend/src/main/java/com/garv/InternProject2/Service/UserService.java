@@ -61,19 +61,15 @@ public class UserService {
             NetHttpTransport transport = new NetHttpTransport();
             GsonFactory jsonFactory = new GsonFactory();
             
+            String clientId = "616801931326-t7stg0k0v8n2n06a3n801i83b06l165n.apps.googleusercontent.com";
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(transport, jsonFactory)
-                // Note: In production, specify your actual Client ID here
-                // .setAudience(Collections.singletonList("YOUR_GOOGLE_CLIENT_ID"))
+                .setAudience(Collections.singletonList(clientId))
                 .build();
 
-            // We are using verify() which also checks the signature
-            // If audience isn't set, it verifies signature but ignores audience check.
-            GoogleIdToken idToken = GoogleIdToken.parse(jsonFactory, request.getCredential());
+            GoogleIdToken idToken = verifier.verify(request.getCredential());
             if (idToken != null) {
-                boolean valid = verifier.verify(idToken);
-                if (valid || true) { // Remove || true when configuring real client ID
-                    GoogleIdToken.Payload payload = idToken.getPayload();
-                    String email = payload.getEmail();
+                GoogleIdToken.Payload payload = idToken.getPayload();
+                String email = payload.getEmail();
                     
                     User user = userRepository.findByUsername(email).orElse(null);
                     if (user == null) {
@@ -87,9 +83,6 @@ public class UserService {
                     if (user.isLocked()) return "Account lock hogya";
                     
                     return JwtUtil.generateToken(user.getUsername());
-                } else {
-                    return "Invalid ID token.";
-                }
             } else {
                 return "Invalid ID token.";
             }
