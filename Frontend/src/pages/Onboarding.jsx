@@ -240,6 +240,34 @@ export default function Onboarding() {
           <div className="onboarding-form glass-panel" style={{ padding: '32px', maxWidth: '500px', margin: '0 auto', textAlign: 'left' }}>
             <h2>Connect Database</h2>
             <p style={{ color: 'var(--text-muted)', marginBottom: '24px' }}>Add a database to your new workspace.</p>
+            
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text-secondary)' }}>Paste Connection String (Auto-fills form below)</label>
+              <input 
+                type="text" 
+                placeholder="mysql://user:pass@host:port/dbname" 
+                onChange={(e) => {
+                  const str = e.target.value;
+                  if (!str) return;
+                  try {
+                    let urlStr = str;
+                    if (urlStr.startsWith('jdbc:mysql://')) urlStr = urlStr.replace('jdbc:mysql://', 'mysql://');
+                    if (!urlStr.includes('://')) urlStr = 'mysql://' + urlStr;
+                    const url = new URL(urlStr);
+                    setDbForm(prev => ({
+                      ...prev,
+                      dbName: url.pathname.replace('/', '') || prev.dbName,
+                      host: url.hostname || prev.host,
+                      port: url.port || prev.port,
+                      username: decodeURIComponent(url.username) || prev.username,
+                      password: decodeURIComponent(url.password) || prev.password
+                    }));
+                  } catch (err) {}
+                }}
+                style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid var(--border-color)', background: 'var(--bg-elevated)', color: 'white', fontFamily: 'var(--font-mono)', fontSize: '0.9rem' }}
+              />
+            </div>
+
             <form onSubmit={handleConnectDb}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
                 <div>
