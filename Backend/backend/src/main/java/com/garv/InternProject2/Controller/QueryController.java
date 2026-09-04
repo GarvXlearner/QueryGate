@@ -39,7 +39,7 @@ public class QueryController {
     private com.garv.InternProject2.Repository.UserDbAccessRepository userDbAccessRepository;
 
     @GetMapping("/history")
-    public ResponseEntity<List<QueryLog>> getHistory(HttpServletRequest httprequest) {
+    public ResponseEntity<List<java.util.Map<String, Object>>> getHistory(HttpServletRequest httprequest) {
         String username = (String)httprequest.getAttribute("username");
         User user = userRepository.findByUsername(username).orElse(null);
         if(user == null) {
@@ -53,7 +53,32 @@ public class QueryController {
             return ResponseEntity.ok(List.of());
         }
         
-        return ResponseEntity.ok(queryLogRepository.findByDbidInOrderByCreatedAtDesc(dbIds));
+        List<QueryLog> logs = queryLogRepository.findByDbidInOrderByCreatedAtDesc(dbIds);
+        List<java.util.Map<String, Object>> result = new java.util.ArrayList<>();
+        
+        java.util.Map<Long, String> userCache = new java.util.HashMap<>();
+        
+        for (QueryLog log : logs) {
+            java.util.Map<String, Object> map = new java.util.HashMap<>();
+            map.put("id", log.getId());
+            map.put("dbname", log.getDbname());
+            map.put("status", log.getStatus());
+            map.put("createdAt", log.getCreatedAt());
+            map.put("querytext", log.getQuerytext());
+            map.put("actiontype", log.getActiontype());
+            
+            String executingUser = userCache.get(log.getUserid());
+            if (executingUser == null) {
+                User u = userRepository.findById(log.getUserid()).orElse(null);
+                executingUser = (u != null) ? u.getUsername() : "Unknown User";
+                userCache.put(log.getUserid(), executingUser);
+            }
+            map.put("username", executingUser);
+            
+            result.add(map);
+        }
+        
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/execute")

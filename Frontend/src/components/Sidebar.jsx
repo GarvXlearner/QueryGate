@@ -314,8 +314,9 @@ export default function Sidebar({ onSelectDb, activeDb, onInsertQuery, onOpenErd
                     {log.status}
                   </span>
                 </div>
-                <div style={{ fontWeight: '600', color: 'var(--accent-primary)', marginBottom: '4px' }}>
-                  {log.dbname}
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <span style={{ fontWeight: '600', color: 'var(--accent-primary)' }}>{log.dbname}</span>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '11px' }}>by {log.username}</span>
                 </div>
                 <pre style={{ 
                   margin: 0, 
