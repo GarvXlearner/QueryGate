@@ -118,7 +118,7 @@ export default function Onboarding() {
         localStorage.setItem('activeServerId', data.serverId);
         localStorage.setItem('activeServerName', data.serverName);
         localStorage.setItem('activeJoinCode', data.joinCode);
-        navigate('/');
+        navigate('/app');
       } else {
         setError(data.error || 'Failed to join workspace');
       }
@@ -146,7 +146,7 @@ export default function Onboarding() {
                 <h2 style={{ marginBottom: '16px', fontSize: '1.2rem', color: 'var(--text-secondary)' }}>Your Existing Workspaces</h2>
                 <div className="workspace-list" style={{ display: 'grid', gap: '12px' }}>
                   {workspaces.map(ws => (
-                    <div key={ws.id} className="workspace-item" onClick={() => { localStorage.setItem('activeServerId', ws.id); localStorage.setItem('activeServerName', ws.name); localStorage.setItem('activeJoinCode', ws.joinCode); navigate('/'); }} style={{ padding: '16px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', cursor: 'pointer', border: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div key={ws.id} className="workspace-item" onClick={() => { localStorage.setItem('activeServerId', ws.id); localStorage.setItem('activeServerName', ws.name); localStorage.setItem('activeJoinCode', ws.joinCode); navigate('/app'); }} style={{ padding: '16px', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', cursor: 'pointer', border: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <Server size={24} color="var(--accent-primary)" />
                         <span style={{ fontWeight: '500', fontSize: '1.1rem' }}>{ws.name}</span>
@@ -275,7 +275,7 @@ export default function Onboarding() {
             <CheckCircle size={64} color="var(--success-color)" style={{ marginBottom: '24px' }} />
             <h2>All Set!</h2>
             <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>Your workspace is ready and your database is connected.</p>
-            <button onClick={() => navigate('/')} style={{ width: '100%', padding: '12px', background: 'var(--accent-primary)', border: 'none', color: 'white', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
+            <button onClick={() => navigate('/app')} style={{ width: '100%', padding: '12px', background: 'var(--accent-primary)', border: 'none', color: 'white', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>
               Go to Dashboard
             </button>
           </div>
