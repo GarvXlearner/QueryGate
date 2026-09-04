@@ -2,7 +2,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: var(--bg-dark);
+  background-color: var(--bg-base);
   min-height: 250px;
 }
 
@@ -16,31 +16,33 @@
   display: flex;
   background-color: var(--bg-panel);
   border-bottom: 1px solid var(--border-color);
-  padding-left: 8px;
+  padding: 8px 16px 0 16px;
+  gap: 4px;
 }
 
 .results-tab {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 16px;
+  padding: 6px 12px;
   background-color: transparent;
-  color: var(--text-primary);
+  color: var(--text-secondary);
   font-size: 12px;
+  font-weight: 500;
   border-bottom: 2px solid transparent;
   cursor: pointer;
-  opacity: 0.7;
+  transition: all 0.2s ease;
 }
 
 .results-tab:hover:not(:disabled) {
-  opacity: 1;
+  color: var(--text-primary);
   background-color: var(--bg-hover);
+  border-radius: 6px 6px 0 0;
 }
 
 .results-tab.active {
-  opacity: 1;
+  color: var(--accent-primary);
   border-bottom-color: var(--accent-primary);
-  font-weight: 500;
 }
 
 .results-tab:disabled {
@@ -51,16 +53,16 @@
 .results-content {
   flex: 1;
   overflow: auto;
-  background-color: var(--bg-panel);
+  background-color: var(--bg-base);
   position: relative;
 }
 
 .ai-context-panel {
   background: rgba(139, 92, 246, 0.1);
   border-left: 4px solid #8b5cf6;
-  padding: 12px;
+  padding: 16px;
   margin: 16px;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
 .ai-context-panel strong {
@@ -68,6 +70,7 @@
   color: #c4b5fd;
   margin-bottom: 8px;
   font-size: 13px;
+  font-weight: 600;
 }
 
 .ai-context-panel pre {
@@ -78,16 +81,17 @@
 }
 
 .messages-container {
-  padding: 8px 16px;
+  padding: 12px 16px;
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 13px;
+  line-height: 1.6;
 }
 
 .message-text {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   white-space: pre-wrap;
 }
 
@@ -96,7 +100,7 @@
 }
 
 .message-text.success {
-  color: var(--text-primary);
+  color: var(--accent-success);
 }
 
 .msg-icon {
@@ -111,36 +115,36 @@
 
 .ssms-grid {
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: 13px;
   font-family: var(--font-sans);
-  background-color: var(--bg-panel);
+  background-color: var(--bg-base);
   min-width: 100%;
 }
 
 .ssms-grid th, .ssms-grid td {
   border: 1px solid var(--border-color);
-  padding: 4px 8px;
+  padding: 6px 12px;
   white-space: nowrap;
 }
 
 .ssms-grid th {
-  background-color: var(--bg-elevated);
+  background-color: var(--bg-panel);
   font-weight: 600;
   color: var(--text-primary);
   position: sticky;
   top: 0;
   z-index: 10;
-  box-shadow: 0 1px 0 var(--border-color); /* for sticky borders */
+  box-shadow: 0 1px 0 var(--border-color);
 }
 
 .row-number-header {
-  width: 30px;
-  background-color: var(--bg-elevated);
+  width: 40px;
+  background-color: var(--bg-panel);
 }
 
 .row-number {
-  background-color: var(--bg-elevated);
-  color: var(--text-secondary);
+  background-color: var(--bg-panel);
+  color: var(--text-muted);
   text-align: center;
   font-weight: 500;
   position: sticky;
@@ -155,20 +159,22 @@
 
 .no-data {
   text-align: center;
-  padding: 24px;
+  padding: 32px;
   color: var(--text-muted);
+  font-size: 14px;
 }
 
 .export-btn {
   display: flex;
   align-items: center;
-  gap: 4px;
-  background: var(--bg-hover);
-  border: 1px solid var(--border-color);
+  gap: 6px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-light);
   color: var(--text-primary);
-  padding: 4px 8px;
-  font-size: 11px;
-  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -176,5 +182,5 @@
 .export-btn:hover {
   background: var(--accent-primary);
   border-color: var(--accent-primary);
-  color: white;
+  box-shadow: var(--shadow-glow);
 }

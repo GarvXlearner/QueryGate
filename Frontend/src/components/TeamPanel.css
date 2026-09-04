@@ -1,24 +1,31 @@
 .team-panel-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: fadeIn 0.2s ease-out;
 }
 
 .team-panel {
   width: 600px;
   max-width: 90%;
   max-height: 80vh;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .team-header {
-  padding: 16px 20px;
+  padding: 20px 24px;
   border-bottom: 1px solid var(--border-color);
   display: flex;
   justify-content: space-between;
@@ -29,10 +36,13 @@
   margin: 0;
   display: flex;
   align-items: center;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 .team-body {
-  padding: 20px;
+  padding: 24px;
   overflow-y: auto;
 }
 
@@ -45,8 +55,14 @@
 .member-card {
   background: var(--bg-elevated);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.member-card:hover {
+  border-color: var(--text-muted);
+  box-shadow: var(--shadow-md);
 }
 
 .member-info {
@@ -56,16 +72,17 @@
 }
 
 .member-avatar {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
-  background: var(--accent-primary);
+  background: linear-gradient(135deg, var(--accent-primary), #8b5cf6);
   color: white;
   display: flex;
   justify-content: center;
   align-items: center;
   font-weight: 600;
-  font-size: 1.2rem;
+  font-size: 1.25rem;
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
 }
 
 .member-details {
@@ -76,29 +93,54 @@
 .member-name {
   font-weight: 600;
   color: var(--text-primary);
+  font-size: 14px;
 }
 
 .member-role {
   font-size: 12px;
   color: var(--text-muted);
+  margin-top: 2px;
 }
 
 .db-access-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px;
+  padding: 10px 12px;
   border: 1px solid var(--border-color);
-  border-radius: 4px;
+  border-radius: 6px;
   margin-bottom: 8px;
-  background: var(--bg-surface);
+  background: var(--bg-base);
+  transition: border-color 0.2s;
+}
+
+.db-access-row:hover {
+  border-color: var(--accent-primary);
 }
 
 .access-select {
   background: var(--bg-elevated);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 6px 12px;
+  border-radius: 6px;
   outline: none;
+  font-size: 13px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.access-select:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }

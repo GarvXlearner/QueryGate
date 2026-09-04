@@ -1,44 +1,35 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@400;500;600;700&display=swap');
 
 :root {
-  /* Light Theme (Default) */
-  --bg-dark: #f0f0f0;          /* Main workspace background */
-  --bg-panel: #ffffff;         /* Panels like sidebar, toolbar */
-  --bg-elevated: #e2e8f0;      /* Elevated elements */
-  --bg-hover: #e5e7eb;         /* Hover states */
+  /* Modern Premium Dark Theme (Default) */
+  --bg-base: #09090b;          /* Ultra dark base (Zinc 950) */
+  --bg-dark: #09090b;
+  --bg-panel: #18181b;         /* Slightly lighter panel (Zinc 900) */
+  --bg-elevated: #27272a;      /* Elevated elements (Zinc 800) */
+  --bg-hover: #3f3f46;         /* Hover states (Zinc 700) */
+  --bg-glass: rgba(24, 24, 27, 0.7); /* Glassmorphic background */
   
-  --text-primary: #111827;
-  --text-secondary: #4b5563;
-  --text-muted: #9ca3af;
+  --text-primary: #f8fafc;     /* Off-white text */
+  --text-secondary: #a1a1aa;   /* Zinc 400 */
+  --text-muted: #71717a;       /* Zinc 500 */
   
-  --accent-primary: #005a9e;   /* SSMS blue */
-  --accent-hover: #0078d4;
-  --accent-success: #10b981;
-  --accent-error: #ef4444;
+  --accent-primary: #3b82f6;   /* Blue 500 */
+  --accent-hover: #2563eb;     /* Blue 600 */
+  --accent-success: #10b981;   /* Emerald 500 */
+  --accent-error: #ef4444;     /* Red 500 */
+  --accent-glow: rgba(59, 130, 246, 0.5);
   
-  --border-color: #d1d5db;
+  --border-color: #27272a;     /* Zinc 800 */
+  --border-light: rgba(255, 255, 255, 0.1);
   
-  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Outfit', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
-}
 
-[data-theme="dark"] {
-  /* Dark Theme (SSMS/VS Code Dark) */
-  --bg-dark: #1e1e1e;
-  --bg-panel: #252526;
-  --bg-elevated: #333333;
-  --bg-hover: #2a2d2e;
-  
-  --text-primary: #cccccc;
-  --text-secondary: #969696;
-  --text-muted: #6b7280;
-  
-  --accent-primary: #007acc;
-  --accent-hover: #005a9e;
-  --accent-success: #10b981;
-  --accent-error: #f48771;
-  
-  --border-color: #454545;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
+  --shadow-glow: 0 0 15px var(--accent-glow);
 }
 
 * {
@@ -49,10 +40,17 @@
 
 body {
   font-family: var(--font-sans);
-  background-color: var(--bg-dark);
+  background-color: var(--bg-base);
   color: var(--text-primary);
   line-height: 1.5;
-  overflow: hidden; /* We'll handle scrolling in panels */
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  letter-spacing: -0.02em;
 }
 
 a {
@@ -65,16 +63,35 @@ button {
   font-family: inherit;
   border: none;
   background: none;
+  transition: all 0.2s ease-in-out;
 }
 
 input, textarea {
   font-family: inherit;
 }
 
+/* Glassmorphism Utilities */
+.glass-panel {
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-md);
+}
+
+.glass-modal {
+  background: rgba(24, 24, 27, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-lg);
+  border-radius: 12px;
+}
+
 /* Premium Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -83,7 +100,8 @@ input, textarea {
 
 ::-webkit-scrollbar-thumb {
   background: var(--bg-elevated);
-  border-radius: 4px;
+  border-radius: 8px;
+  transition: background 0.2s;
 }
 
 ::-webkit-scrollbar-thumb:hover {
